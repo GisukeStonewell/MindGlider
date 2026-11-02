@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 31.999999 31.999999" width="24" height="24">
+<defs>
+<linearGradient id="spaf20a4cdb149-c">
+<stop stop-color="#5eb0f4" offset="0" />
+<stop stop-color="#e1f1fc" offset=".31867" />
+<stop stop-color="#70c0fc" offset=".66466" />
+<stop stop-color="#1f8df2" offset="1" />
+</linearGradient>
+<linearGradient id="spaf20a4cdb149-b">
+<stop stop-color="#784421" offset="0" />
+<stop stop-color="#deaa87" offset=".26588" />
+<stop stop-color="#81614f" offset=".66466" />
+<stop stop-color="#784421" offset="1" />
+</linearGradient>
+<linearGradient id="spaf20a4cdb149-d">
+<stop stop-color="#fcbe0a" offset="0" />
+<stop stop-color="#fef0bc" offset=".26588" />
+<stop stop-color="#f5cc37" offset=".66466" />
+<stop stop-color="#e4dd9a" offset="1" />
+</linearGradient>
+<linearGradient id="spaf20a4cdb149-f" y2="540.78" xlink:href="#spaf20a4cdb149-c" gradientUnits="userSpaceOnUse" y1="540.78" gradientTransform="translate(-.10201)" x2="150.69" x1="135.26" />
+<linearGradient id="spaf20a4cdb149-g" y2="533.99" xlink:href="#spaf20a4cdb149-b" gradientUnits="userSpaceOnUse" y1="533.99" gradientTransform="matrix(1.0069 0 0 .76084 -.98835 127.97)" x2="150.3" x1="135.22" />
+<linearGradient id="spaf20a4cdb149-h" y2="540.78" xlink:href="#spaf20a4cdb149-c" gradientUnits="userSpaceOnUse" y1="540.78" gradientTransform="matrix(1 0 0 -1 -.10201 1091.5)" x2="150.69" x1="135.26" />
+<linearGradient id="spaf20a4cdb149-i" y2="533.99" xlink:href="#spaf20a4cdb149-b" gradientUnits="userSpaceOnUse" y1="533.99" gradientTransform="matrix(1,0,0,-0.77997,3.4735e-5,973.79)" x2="150.3" x1="135.22" />
+<linearGradient id="spaf20a4cdb149-j" y2="550.89" xlink:href="#spaf20a4cdb149-d" gradientUnits="userSpaceOnUse" y1="550.89" gradientTransform="translate(-50.134,1.838)" x2="198.25" x1="187.63" />
+<linearGradient id="spaf20a4cdb149-k" y2="550.25" xlink:href="#spaf20a4cdb149-d" gradientUnits="userSpaceOnUse" y1="550.89" gradientTransform="translate(-50.134,1.838)" x2="198.2" x1="187.63" />
+<linearGradient id="spaf20a4cdb149-l" y2="554.12" gradientUnits="userSpaceOnUse" y1="544.85" x2="142.86" x1="142.86">
+<stop stop-color="#f3d95f" offset="0" />
+<stop stop-color="#fcbf0d" stop-opacity="0" offset="1" />
+</linearGradient>
+</defs>
+<g transform="translate(-107.63 -600.22)">
+<g transform="translate(59.014,63.936)">
+<rect rx=".16552" ry=".18513" height="32" width="32" y="536.28" x="48.62" fill="none" />
+<g fill-rule="evenodd" transform="matrix(.92276 0 0 1.1165 -67.219 -57.109)">
+<path stroke-linejoin="round" d="m142.25 545.72-6.5891-4.8861v-5.0024h14.426l-0.11633 5.0024-6.51 4.9117" stroke="#520" stroke-linecap="round" stroke-width=".75" fill="#74bcf8" />
+<path d="m133.8 536.14v-3.7905h18.155v3.7771" stroke="#502d16" stroke-width=".87528px" fill="#946546" />
+<path stroke-linejoin="round" d="m142.25 545.79-6.5891 4.8861v5.0024h14.426l-0.11633-5.0024-6.51-4.8605" stroke="#520" stroke-linecap="round" stroke-width=".75" fill="#74bcf8" />
+<path d="m133.86 555.35v3.8858h18.03v-3.872" stroke="#502d16" stroke-width=".88316px" fill="#946546" />
+<path d="m136.17 555.32 1.3275-2.7975 5.2588-3.5165 5.3098 3.7207 1.0722 2.5932" transform="matrix(1 0 0 .90566 0 52.399)" fill="#f5d666" />
+<path d="m148.28 553.39c-3.9656-0.87083-7.9756-0.59701-12.408 0.96413l6.8027-5.6589 5.6057 4.6948z" transform="matrix(1 0 0 -.90566 .19716 1042.8)" fill="#f5d666" />
+<path fill="url(#spaf20a4cdb149-l)" d="m142.86 550.51 0.25124-5.2512-0.5025 0.00001" />
+</g>
+</g>
+</g>
+</svg>

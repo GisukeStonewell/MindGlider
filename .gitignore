@@ -1,0 +1,33 @@
+# Toolchains, credentials and local development tools
+/.tools/
+/.vs/
+/.idea/
+/.vscode/
+# Build and release output: upload ZIPs to GitHub Releases, not Git
+/target/
+/dist/
+/artifacts/
+# Maps, settings, CLI history, recovery data and backups
+/data/
+**/.mindglider-backup/
+**/.speedplane-backup/
+*.mm.autosave
+# Secrets (do not commit credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Temporary/editor/OS files
+*.tmp
+*.log
+*.pdb
+*.exe
+*.msi
+*.zip
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+Desktop.ini
+# Cargo.lock, examples, test maps and editable icon assets are intentionally tracked.

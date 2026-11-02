@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<defs><linearGradient id="tile" x2="0" y2="1"><stop stop-color="#168BDE"/><stop offset="1" stop-color="#005FB8"/></linearGradient></defs>
+<rect x="8" y="8" width="240" height="240" rx="52" fill="url(#tile)"/>
+<!-- Connected thoughts become a fast paper plane. -->
+<path d="M42 172H72L105 140M42 210H70L100 177" fill="none" stroke="#89E0FF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="40" cy="172" r="10" fill="#C5F2FF"/><circle cx="40" cy="210" r="10" fill="#C5F2FF"/>
+<path d="M73 116L218 46L168 210L139 146Z" fill="white" stroke="white" stroke-width="3" stroke-linejoin="round"/>
+<path d="M139 146L218 46L116 133Z" fill="#B8E8FF"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 39.999499 32.000053" id="sp6a71fad401f0-svg2" width="24" height="24">
+  <defs id="sp6a71fad401f0-defs4">
+    <linearGradient id="sp6a71fad401f0-b">
+      <stop stop-color="#36d200" offset="0" id="sp6a71fad401f0-stop7" />
+      <stop stop-color="#fff" offset="1" id="sp6a71fad401f0-stop9" />
+    </linearGradient>
+    <linearGradient id="sp6a71fad401f0-a" y2="377.60001" xlink:href="#sp6a71fad401f0-b" gradientUnits="userSpaceOnUse" y1="388.92001" gradientTransform="matrix(-9.8272e-4,-1.1301,0.86375,-0.0011671,-329.75,812.82)" x2="142.38" x1="160.7" />
+    <linearGradient xlink:href="#sp6a71fad401f0-b" id="sp6a71fad401f0-linearGradient4372" gradientUnits="userSpaceOnUse" gradientTransform="matrix(-9.8272e-4,-1.1301,0.86375,-0.0011671,-329.75,812.82)" x1="160.7" y1="388.92001" x2="142.38" y2="377.60001" />
+  </defs>
+  <g transform="matrix(1.2497585,0,0,1.2632236,-624.03719,-430.36271)" id="sp6a71fad401f0-g14">
+    <g transform="matrix(1.5832,0,0,1.5832,1445.4,-598.85)" id="sp6a71fad401f0-g16">
+      <g transform="matrix(0.22857,0,0,0.22857,-446.94,470.16)" id="sp6a71fad401f0-g18" style="stroke:#008000">
+        <rect style="color:#000000;fill:none;stroke-width:8" rx="14" ry="14" height="62" width="62" y="543.35999" x="-646" id="sp6a71fad401f0-rect20" />
+        <path d="m -583.97,584.27 -12.356,-15.996 24.301,0 -11.944,15.996 z" id="sp6a71fad401f0-path22" style="fill:#9ae880;fill-rule:evenodd;stroke-width:2.9000001;stroke-linejoin:round" />
+        <path d="m -645.2,567.18 -12.356,15.996 24.301,0 -11.944,-15.996 z" id="sp6a71fad401f0-path24" style="fill:#9ae880;fill-rule:evenodd;stroke-width:2.9000001;stroke-linejoin:round" />
+      </g>
+      <text style="font-weight:bold;font-size:11px;line-height:125%;font-family:Arial;letter-spacing:1px;word-spacing:0px;fill:#008000" space="preserve" font-size="11px" y="605.37836" x="-591.42194" font-weight="bold" line-height="125%" id="sp6a71fad401f0-text26">
+        <tspan y="605.37836" x="-591.42194" id="sp6a71fad401f0-tspan28">R</tspan>
+      </text>
+    </g>
+  </g>
+</svg>

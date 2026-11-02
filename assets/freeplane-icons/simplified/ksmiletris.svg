@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 31.955807 31.955808" width="24" height="24">
+<defs>
+<linearGradient id="spbb01864c6258-d">
+<stop stop-color="#ff0" offset="0" />
+<stop stop-color="#ff0" stop-opacity="0" offset="1" />
+</linearGradient>
+<radialGradient id="spbb01864c6258-c" gradientUnits="userSpaceOnUse" cy="230.15" cx="267.6" gradientTransform="matrix(-1.2041 -.8086 .97364 -1.4498 368.7 779.61)" r="54.705">
+<stop stop-color="#fdff00" offset="0" />
+<stop stop-color="#ffd000" offset="1" />
+</radialGradient>
+<radialGradient id="spbb01864c6258-a" xlink:href="#spbb01864c6258-d" gradientUnits="userSpaceOnUse" cy="419.45" cx="127.13" gradientTransform="matrix(1,0,0,1.7307,0,-306.48)" r="2.2463" />
+<linearGradient id="spbb01864c6258-b" y2="214.96" gradientUnits="userSpaceOnUse" y1="271.12" x2="246.2" x1="315.83">
+<stop stop-color="#540" offset="0" />
+<stop stop-color="#d4aa00" stop-opacity="0" offset="1" />
+</linearGradient>
+</defs>
+<g transform="translate(-28.647 -724.73)">
+<g transform="translate(-109.52,310.95)">
+<path font-size="61.543px" d="m308.65 219.91a51.206 51.206 0 0 1 -51.21 51.21 51.206 51.206 0 0 1 -51.21 -51.21 51.206 51.206 0 0 1 51.21 -51.21 51.206 51.206 0 0 1 51.21 51.21z" stroke-opacity=".79651" fill-rule="evenodd" transform="matrix(.29248 0 0 .29248 78.849 365.44)" stroke="#000" stroke-width="6.8381" fill="#fee800" />
+<path stroke-linejoin="round" d="m128.77 419.45a1.6413 3.2825 0 0 1 -1.6413 3.2825 1.6413 3.2825 0 0 1 -1.6413 -3.2825 1.6413 3.2825 0 0 1 1.6413 -3.2825 1.6413 3.2825 0 0 1 1.6413 3.2825z" stroke-opacity=".84884" transform="matrix(1.6157,0,0,1.0945,-56.306,-32.386)" stroke="url(#spbb01864c6258-a)" stroke-linecap="round" stroke-width="1.21" />
+<path stroke-linejoin="round" d="m145.11 432.72c4.9843 11.814 16.399 6.4438 17.991-0.14186" stroke="#000" stroke-linecap="round" stroke-width="1.2407" fill="none" />
+<path stroke-linejoin="round" d="m128.77 419.45a1.6413 3.2825 0 0 1 -1.6413 3.2825 1.6413 3.2825 0 0 1 -1.6413 -3.2825 1.6413 3.2825 0 0 1 1.6413 -3.2825 1.6413 3.2825 0 0 1 1.6413 3.2825z" stroke-opacity=".84884" transform="matrix(1.6157,0,0,1.0945,-46.792,-32.33)" stroke="url(#spbb01864c6258-a)" stroke-linecap="round" stroke-width="1.21" />
+<path font-size="61.543px" d="m308.65 219.91a51.206 51.206 0 0 1 -51.21 51.21 51.206 51.206 0 0 1 -51.21 -51.21 51.206 51.206 0 0 1 51.21 -51.21 51.206 51.206 0 0 1 51.21 51.21z" fill-rule="evenodd" transform="matrix(.29248 0 0 .29248 78.809 365.4)" fill="url(#spbb01864c6258-b)" />
+</g>
+</g>
+</svg>

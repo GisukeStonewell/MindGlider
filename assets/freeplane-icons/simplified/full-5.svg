@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.955807 31.955808" width="24" height="24">
+<defs>
+<radialGradient id="sp80c62298f277-a" gradientUnits="userSpaceOnUse" cy="229.55" cx="268.68" gradientTransform="matrix(-1.2041 -.81777 1.0542 -1.5523 350.2 805.59)" r="54.705">
+<stop stop-color="#2d2e7e" offset="0" />
+<stop stop-color="#fff" offset="1" />
+</radialGradient>
+</defs>
+<g transform="translate(-233.67 -265.64)">
+<g transform="translate(19.849,23.656)">
+<g transform="translate(-1.6634 -.36964)">
+<path font-size="61.543px" d="m308.65 219.91a51.206 51.206 0 0 1 -51.21 51.21 51.206 51.206 0 0 1 -51.21 -51.21 51.206 51.206 0 0 1 51.21 -51.21 51.206 51.206 0 0 1 51.21 51.21z" stroke-opacity=".69677" fill-rule="evenodd" transform="matrix(.29248 0 0 .29248 156.17 194.01)" stroke="#2d2e7e" stroke-width="6.8381" fill="#9696be" />
+<text font-size="30px" space="preserve" y="268.7749" x="222.85426" font-family="Arial" fill="#ffffff">
+<tspan font-size="30px" y="268.7749" x="222.85426" font-family="Arial" fill="#ffffff">5</tspan>
+</text>
+</g>
+</g>
+</g>
+</svg>

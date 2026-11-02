@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.999999 32.006705" width="24" height="24">
+<defs>
+<linearGradient id="sp4cd0e21a9a07-a" y2="619.85" gradientUnits="userSpaceOnUse" y1="586.56" gradientTransform="matrix(1.1454,0,0,1.0743,-318.49,-169.32)" x2="424.05" x1="424.05">
+<stop stop-color="#161627" offset="0" />
+<stop stop-color="#fff" offset="1" />
+</linearGradient>
+<radialGradient id="sp4cd0e21a9a07-b" gradientUnits="userSpaceOnUse" cy="623.78" cx="423.23" gradientTransform="matrix(.6578 .0069657 -.006742 .63667 149.04 223.68)" r="2.9041">
+<stop stop-color="#fff" offset="0" />
+<stop stop-color="#00d534" offset="1" />
+</radialGradient>
+</defs>
+<g transform="translate(-128.11 -165.1)">
+<g transform="translate(13.983,-371.14)">
+<g stroke-linecap="round" transform="translate(-37.111,74.137)">
+<rect stroke-linejoin="round" height="28.912" width="15.756" stroke="#000" y="462.64" x="159.36" stroke-width="1.0702" fill="#e6e6e6" />
+<rect stroke-opacity=".80814" height="1.7332" width="3.5007" stroke="#000" y="492.06" x="165.49" stroke-width="0.633" />
+<rect stroke-linejoin="round" stroke-opacity=".87097" height="25.895" width="12.251" stroke="#000" y="464.09" x="161.11" stroke-width=".55465" fill="#8a8a93" />
+<path d="m426.21 624.16a2.5541 2.6339 0 0 1 -2.5535 2.6339 2.5541 2.6339 0 0 1 -2.5547 -2.6326 2.5541 2.6339 0 0 1 2.5522 -2.6351 2.5541 2.6339 0 0 1 2.5559 2.6314" stroke-opacity=".87097" transform="matrix(1.1454,0,0,1.0743,-318.03,-193.67)" stroke="#000" stroke-width="0.7" fill="#999" />
+<path d="m426.21 624.16a2.5541 2.6339 0 0 1 -2.5535 2.6339 2.5541 2.6339 0 0 1 -2.5547 -2.6326 2.5541 2.6339 0 0 1 2.5522 -2.6351 2.5541 2.6339 0 0 1 2.5559 2.6314" stroke-opacity=".87097" transform="matrix(1.1454,0,0,1.0743,-318.03,-201.79)" stroke="#000" stroke-width="0.7" fill="#999" />
+<path d="m426.21 624.16a2.5541 2.6339 0 0 1 -2.5535 2.6339 2.5541 2.6339 0 0 1 -2.5547 -2.6326 2.5541 2.6339 0 0 1 2.5522 -2.6351 2.5541 2.6339 0 0 1 2.5559 2.6314" stroke-opacity=".53488" transform="matrix(1.5398,0,0,1.4442,-485.03,-416.43)" stroke="#10d300" stroke-width="3.006" fill="#80ea9a" />
+</g>
+<rect rx=".16552" ry=".18513" height="32" width="32" y="536.24" x="114.13" fill="none" />
+</g>
+</g>
+</svg>

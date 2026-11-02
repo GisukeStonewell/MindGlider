@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="sp110a37ee5da5-svg21" viewBox="0 0 32.040335 28.479474" version="1.1" width="24" height="24">
+  <defs id="sp110a37ee5da5-defs7">
+    <linearGradient gradientTransform="matrix(0.58524,-0.36673,0.36945,0.57952,-199.505,-193.673)" x1="93.539" x2="105.75" y1="417.96" gradientUnits="userSpaceOnUse" y2="443.74" id="sp110a37ee5da5-a">
+      <stop id="sp110a37ee5da5-stop2" offset="0" stop-color="#fcf59f" />
+      <stop id="sp110a37ee5da5-stop4" offset="1" stop-color="#fbbd0a" />
+    </linearGradient>
+  </defs>
+  <path style="fill:#fcd954;stroke:#d45500;stroke-width:1.99174309;stroke-linecap:round;stroke-linejoin:round;stroke-opacity:0.81395" id="sp110a37ee5da5-path11" d="M 31.0044,26.78881 C 30.398506,27.814589 1.6252901,27.668301 1.0320062,26.63618 0.43902394,25.604276 14.981098,0.98527815 16.180029,0.99149076 17.378898,0.99760485 31.610153,25.762836 31.004342,26.788847 Z" />
+  <text style="font-size:26px;font-family:'Arial Rounded MT Bold';fill:#333333" id="sp110a37ee5da5-text15" x="10.808742" y="25.580587" space="preserve" font-size="26px">
+    <tspan style="font-size:26px;font-family:'Arial Rounded MT Bold';fill:#333333" id="sp110a37ee5da5-tspan13" x="10.808742" y="25.580587" font-size="26px">!</tspan>
+  </text>
+</svg>

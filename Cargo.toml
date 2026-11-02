@@ -1,0 +1,53 @@
+[package]
+name = "mindglider"
+version = "0.9.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+authors = ["GisukeStonewell"]
+repository = "https://github.com/GisukeStonewell/MindGlider"
+readme = "README.md"
+publish = false
+description = "A focused Windows mind map editor with Freeplane interoperability"
+
+[[bin]]
+name = "mindglider"
+path = "src/main.rs"
+
+[[bin]]
+name = "mindglider-cli-fixture"
+path = "tests/fixtures/cli.rs"
+test = false
+bench = false
+doc = false
+
+[dependencies]
+anyhow = "1"
+eframe = { version = "=0.31.1", default-features = false, features = ["default_fonts", "wgpu", "persistence", "accesskit"] }
+egui_extras = { version = "=0.31.1", features = ["image", "file"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+xmltree = { version = "0.11", features = ["attribute-order"] }
+regex = "1"
+uuid = { version = "1", features = ["v4"] }
+rfd = "0.15"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
+resvg = "0.45"
+svg2pdf = "0.13"
+webbrowser = "1"
+arboard = "3"
+base64 = "0.22"
+pdf-writer = "0.12"
+url = "2"
+toml_edit = { version = "0.25.17", default-features = false, features = ["parse"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_JobObjects", "Win32_Security"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+

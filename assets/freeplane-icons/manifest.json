@@ -1,0 +1,1007 @@
+[
+  {
+    "id": "help",
+    "source": "freeplane/src/viewer/resources/images/icons/help.svg",
+    "sha256": "211d77a7a2399b525334f8e2ee87a4a40effd6a1286c7236abb469742900e7cc"
+  },
+  {
+    "id": "yes",
+    "source": "freeplane/src/viewer/resources/images/icons/yes.svg",
+    "sha256": "a0e41fa2b690ede6b51ceb637cb6ce0cf653e7ffd8f82505bf75d0657a3dfd7d"
+  },
+  {
+    "id": "button_ok",
+    "source": "freeplane/src/viewer/resources/images/icons/button_ok.svg",
+    "sha256": "d9cf9598437e75ac1cf472f17d6966c7bd9592b5b00d578a5bc2f71808039557"
+  },
+  {
+    "id": "button_cancel",
+    "source": "freeplane/src/viewer/resources/images/icons/button_cancel.svg",
+    "sha256": "b15b2ee2da7546c08ab763bd8b5324c2701aa952df058f6484413f79752895fa"
+  },
+  {
+    "id": "bookmark",
+    "source": "freeplane/src/viewer/resources/images/icons/bookmark.svg",
+    "sha256": "0234babc61f2e27a05d5af570477d8f9f09ccb9ddb671d5677b87fa8e1015960"
+  },
+  {
+    "id": "idea",
+    "source": "freeplane/src/viewer/resources/images/icons/idea.svg",
+    "sha256": "2869a54a7fee7aafcc3fc99a2ded75fccde03009be5e004ab3f658f45a827f4e"
+  },
+  {
+    "id": "messagebox_warning",
+    "source": "freeplane/src/viewer/resources/images/icons/messagebox_warning.svg",
+    "sha256": "f28a5fd02fd65aded41dd891e26c6c41b859827f8c84ddf6555e2c9d8daf7f04"
+  },
+  {
+    "id": "stop-sign",
+    "source": "freeplane/src/viewer/resources/images/icons/stop-sign.svg",
+    "sha256": "d72dd50671983365613cf8bab43e9c646d8d2f6e975e854fd901b02659a9d245"
+  },
+  {
+    "id": "closed",
+    "source": "freeplane/src/viewer/resources/images/icons/closed.svg",
+    "sha256": "5102925170c8e547c71b02819807804ad55364258ec452b63e007a4599c607f8"
+  },
+  {
+    "id": "info",
+    "source": "freeplane/src/viewer/resources/images/icons/info.svg",
+    "sha256": "77172fae5d1c84e7aaa689f0dbb9d5680a9a0e6fbece5909d8b6f74bba944c7c"
+  },
+  {
+    "id": "clanbomber",
+    "source": "freeplane/src/viewer/resources/images/icons/clanbomber.svg",
+    "sha256": "5619f39703913e421f488e91b3d5e0766cf00c89f35948b67532ecb3009a2412"
+  },
+  {
+    "id": "checked",
+    "source": "freeplane/src/viewer/resources/images/icons/checked.svg",
+    "sha256": "1449bc4b291696a0461557fe3a858521523af555c307ef4ec8942f33383ba3b3"
+  },
+  {
+    "id": "unchecked",
+    "source": "freeplane/src/viewer/resources/images/icons/unchecked.svg",
+    "sha256": "5e2e6d4098dbeacc53491c2f7b01f559495a5827a20b33654db0cc0318ab5de1"
+  },
+  {
+    "id": "wizard",
+    "source": "freeplane/src/viewer/resources/images/icons/wizard.svg",
+    "sha256": "1cf3eeb69d5972b168bb6abd27a1005ae145342bdb4cbe24802b558ca9c57338"
+  },
+  {
+    "id": "gohome",
+    "source": "freeplane/src/viewer/resources/images/icons/gohome.svg",
+    "sha256": "690466e4b9182a64b3c357e3f0cc7d0b9f06d5bd15ec926b1db0639af4dd2162"
+  },
+  {
+    "id": "knotify",
+    "source": "freeplane/src/viewer/resources/images/icons/knotify.svg",
+    "sha256": "24d8e3bed1470ac1750381dd1e99ff74e3a8b6d4bf802ca3938f1a1f42024ae8"
+  },
+  {
+    "id": "password",
+    "source": "freeplane/src/viewer/resources/images/icons/password.svg",
+    "sha256": "9138096c3e1fe628b9b46d5bcbac9103c16048f4ea65ca69f41e53b749c8de36"
+  },
+  {
+    "id": "pencil",
+    "source": "freeplane/src/viewer/resources/images/icons/pencil.svg",
+    "sha256": "3a9c261d06ce6c6d1eac64af1300dd62c6e5db3fb6c2efc4c09a19c80b067bb7"
+  },
+  {
+    "id": "xmag",
+    "source": "freeplane/src/viewer/resources/images/icons/xmag.svg",
+    "sha256": "669dfd5944660e4341a634ba8473d27015705d7b33ddb5660bdf90aa68f2ab80"
+  },
+  {
+    "id": "bell",
+    "source": "freeplane/src/viewer/resources/images/icons/bell.svg",
+    "sha256": "13f1f9e871df46fc26933139f2dc6f454ee6f09d96875eaf4fe7550eb1a36c43"
+  },
+  {
+    "id": "launch",
+    "source": "freeplane/src/viewer/resources/images/icons/launch.svg",
+    "sha256": "5d586c13fa34901a6c8e6eb3487307a86992aaaeb122624f45f9f21f52de6b2c"
+  },
+  {
+    "id": "broken-line",
+    "source": "freeplane/src/viewer/resources/images/icons/broken-line.svg",
+    "sha256": "de82e72e66544ee27494f7fa9ba02f6b5e8414b1b5de88c966e1db30829f3622"
+  },
+  {
+    "id": "stop",
+    "source": "freeplane/src/viewer/resources/images/icons/stop.svg",
+    "sha256": "ce0becaf7554e6b1ec5a253fcde9a88ebb983f24d6d043b2a962d22325cf9357"
+  },
+  {
+    "id": "prepare",
+    "source": "freeplane/src/viewer/resources/images/icons/prepare.svg",
+    "sha256": "6f1b10507a98a5f0a227d3d657a9aa2db645dd1e529dcb4b49151b9d82ce0769"
+  },
+  {
+    "id": "go",
+    "source": "freeplane/src/viewer/resources/images/icons/go.svg",
+    "sha256": "f0670cfc4bc263ce18b277f575c338a1fb201a8ab125dd6c3dcd2724eb685a91"
+  },
+  {
+    "id": "very_negative",
+    "source": "freeplane/src/viewer/resources/images/icons/very_negative.svg",
+    "sha256": "6c48ef9dd91c65ba24da7f565649d6a2ec1ec0ea57ca41e6d593c912d0109f38"
+  },
+  {
+    "id": "negative",
+    "source": "freeplane/src/viewer/resources/images/icons/negative.svg",
+    "sha256": "33763ea4334b7e182e4151327c8744d01159ce0545884d1d3bcba966f9504ea8"
+  },
+  {
+    "id": "neutral",
+    "source": "freeplane/src/viewer/resources/images/icons/neutral.svg",
+    "sha256": "33394c00cb5151caa87455ea3e7c1053fb1536655d267812e9e8f96c4a56091a"
+  },
+  {
+    "id": "positive",
+    "source": "freeplane/src/viewer/resources/images/icons/positive.svg",
+    "sha256": "6f02e9ed2b05cfe0a80ce806ab0055e05b04b251201bcf36a776d4a3f27f06c2"
+  },
+  {
+    "id": "very_positive",
+    "source": "freeplane/src/viewer/resources/images/icons/very_positive.svg",
+    "sha256": "2bc19fefd9804866f509ae17a467f21f6893fa252db24ac120b6046fe62079ac"
+  },
+  {
+    "id": "full-1",
+    "source": "freeplane/src/viewer/resources/images/icons/full-1.svg",
+    "sha256": "d602252042d3e87d8d429647bd02fd7dde2aa12089c9de57c12dc907a60f42fb"
+  },
+  {
+    "id": "full-2",
+    "source": "freeplane/src/viewer/resources/images/icons/full-2.svg",
+    "sha256": "2a7d13e898654bc2a7c5a3ef666101403b5a8d0a0f2d8b94357674f5c697c583"
+  },
+  {
+    "id": "full-3",
+    "source": "freeplane/src/viewer/resources/images/icons/full-3.svg",
+    "sha256": "8c7f377945ac4290c0f4c1aff0aa70e038934a912df9f10eadfe43aa633f7799"
+  },
+  {
+    "id": "full-4",
+    "source": "freeplane/src/viewer/resources/images/icons/full-4.svg",
+    "sha256": "2bad7676c6da8713cd7d147a8e5d7af2c71c7b25759c09426d3618f0c90e90d4"
+  },
+  {
+    "id": "full-5",
+    "source": "freeplane/src/viewer/resources/images/icons/full-5.svg",
+    "sha256": "b18c25f5dbba58fc147f2fc02f862d97556d1391d057df24d14670e0b595fbd5"
+  },
+  {
+    "id": "full-6",
+    "source": "freeplane/src/viewer/resources/images/icons/full-6.svg",
+    "sha256": "2ada527dcccdff0e7ea2fd0688d834e3ab7af242dde2b0af6e500900690f3be7"
+  },
+  {
+    "id": "full-7",
+    "source": "freeplane/src/viewer/resources/images/icons/full-7.svg",
+    "sha256": "e5f8f75f7a12d8d67b7184b0ac47e59b54f58c62af38092a4877e7a89d2389cb"
+  },
+  {
+    "id": "full-8",
+    "source": "freeplane/src/viewer/resources/images/icons/full-8.svg",
+    "sha256": "06fc2a6d6ace3a9ccd6a32496140030381579307e550bb72fdd9846ae0650bfe"
+  },
+  {
+    "id": "full-9",
+    "source": "freeplane/src/viewer/resources/images/icons/full-9.svg",
+    "sha256": "3338883c075968384da2350dad25354833beed413860c24890f7737d1b3fcad2"
+  },
+  {
+    "id": "full-0",
+    "source": "freeplane/src/viewer/resources/images/icons/full-0.svg",
+    "sha256": "9917c09b07ac7d901640dae7a293fcf0bad789d0ff158b87a13dc84fb3de8ccd"
+  },
+  {
+    "id": "0%",
+    "source": "freeplane/src/viewer/resources/images/icons/0%.svg",
+    "sha256": "8f9bcfcae20765a2f17028dc394605ca7d15029db3de772eb334d96ab2d8233c"
+  },
+  {
+    "id": "25%",
+    "source": "freeplane/src/viewer/resources/images/icons/25%.svg",
+    "sha256": "0476cc39b725b0c1513d9b721b27e950d35720826007e8206eb4e345492922c7"
+  },
+  {
+    "id": "50%",
+    "source": "freeplane/src/viewer/resources/images/icons/50%.svg",
+    "sha256": "4705db294c074196452acf3ed0da2c0e6c0307ee8b903e77abf526571aa535f5"
+  },
+  {
+    "id": "75%",
+    "source": "freeplane/src/viewer/resources/images/icons/75%.svg",
+    "sha256": "db2fd970651c8b2a9110d5cdc23b392e2d21a10ea26233f8bc7cc7208b7d9bc4"
+  },
+  {
+    "id": "100%",
+    "source": "freeplane/src/viewer/resources/images/icons/100%.svg",
+    "sha256": "a62ed965354a3a60cb8bad1322413fed6915168970cec22f84383e8e7c33ec78"
+  },
+  {
+    "id": "ksmiletris",
+    "source": "freeplane/src/viewer/resources/images/icons/ksmiletris.svg",
+    "sha256": "1882e554e9326e3055399cfc5680d4bfa393dfc938ccb660d8102a63eb714012"
+  },
+  {
+    "id": "smiley-neutral",
+    "source": "freeplane/src/viewer/resources/images/icons/smiley-neutral.svg",
+    "sha256": "7973674cc39ceda5ef3da5f55543d531e5d6584630b1220e98c4764f1bb9df99"
+  },
+  {
+    "id": "smiley-oh",
+    "source": "freeplane/src/viewer/resources/images/icons/smiley-oh.svg",
+    "sha256": "a6eeca93595aba1a9a9a555714dd5b9c342d8bd5d64c22aac95e758597a71d58"
+  },
+  {
+    "id": "smiley-angry",
+    "source": "freeplane/src/viewer/resources/images/icons/smiley-angry.svg",
+    "sha256": "4a83d92de390d046f18e4220d2cfaa4767ab7d80f8a9ff8ca00832d379cf0f95"
+  },
+  {
+    "id": "smily_bad",
+    "source": "freeplane/src/viewer/resources/images/icons/smily_bad.svg",
+    "sha256": "9a433a7d426281923d9104ea669e0aec9ff5986a8bac3a55d5e64a74a2d89b1b"
+  },
+  {
+    "id": "family",
+    "source": "freeplane/src/viewer/resources/images/icons/family.svg",
+    "sha256": "d86372df1651ba94ee56d5b4a34a18b01567f48ce478ab6385acdaec68c471f5"
+  },
+  {
+    "id": "female1",
+    "source": "freeplane/src/viewer/resources/images/icons/female1.svg",
+    "sha256": "3ae684c43469c9846f6afee922566f4b705456210bccd13e65ffcd1c6695dc05"
+  },
+  {
+    "id": "female2",
+    "source": "freeplane/src/viewer/resources/images/icons/female2.svg",
+    "sha256": "e8bcd854624bb30b42045a28f0299c25608692ea5d7a954ca4510244e6e5dfac"
+  },
+  {
+    "id": "females",
+    "source": "freeplane/src/viewer/resources/images/icons/females.svg",
+    "sha256": "ca24f9213e43b809face9ddbcd0c36b38a6c924588c1cd25e27d725588b0b180"
+  },
+  {
+    "id": "male1",
+    "source": "freeplane/src/viewer/resources/images/icons/male1.svg",
+    "sha256": "81cf197e2f696dc9893c70a82080303aa0075bb7ff49fa15c9316db90a619de2"
+  },
+  {
+    "id": "male2",
+    "source": "freeplane/src/viewer/resources/images/icons/male2.svg",
+    "sha256": "5e316f0d31b4bcc978c3c34c83c5c4ea138520ded392a6c2c8174977f93b95a3"
+  },
+  {
+    "id": "males",
+    "source": "freeplane/src/viewer/resources/images/icons/males.svg",
+    "sha256": "71e218562f29db03c1f7ea60fb8de2ee1f3f18e941bf9e386f68f3217302cb62"
+  },
+  {
+    "id": "fema",
+    "source": "freeplane/src/viewer/resources/images/icons/fema.svg",
+    "sha256": "dd136d359cfb83e7566f3d21852346945ed948a3321132daec85b031baa9d350"
+  },
+  {
+    "id": "group",
+    "source": "freeplane/src/viewer/resources/images/icons/group.svg",
+    "sha256": "f812ebde649fa5ca9ba20a21a06f4de4fda323037658c50684fb6f884faf4189"
+  },
+  {
+    "id": "licq",
+    "source": "freeplane/src/viewer/resources/images/icons/licq.svg",
+    "sha256": "83d3c2dcad7228d9bb7bf92d550bf44627f952b31d0c82333141d63f88b10a64"
+  },
+  {
+    "id": "penguin",
+    "source": "freeplane/src/viewer/resources/images/icons/penguin.svg",
+    "sha256": "ec1c9fe0702bcdf09b2f111194122631989277fd7e78f8e62628b4c40687cae3"
+  },
+  {
+    "id": "freemind_butterfly",
+    "source": "freeplane/src/viewer/resources/images/icons/freemind_butterfly.svg",
+    "sha256": "7b262453ab7174100c458633d9699a85438a0781e9dfaf5b49355cbff2e92b56"
+  },
+  {
+    "id": "bee",
+    "source": "freeplane/src/viewer/resources/images/icons/bee.svg",
+    "sha256": "6ea44b441912f5a2ff83432c8bb733700e472b27c3351673625ac93aaa3a0cae"
+  },
+  {
+    "id": "clock",
+    "source": "freeplane/src/viewer/resources/images/icons/clock.svg",
+    "sha256": "817ca2ddf85d0eea99ff237f973c2dbea0b479389e3fbd662323326ee22ee8c5"
+  },
+  {
+    "id": "clock2",
+    "source": "freeplane/src/viewer/resources/images/icons/clock2.svg",
+    "sha256": "ec8f631a8d3cc8987e81a5c133f69ffe8ce440b126510f80fb4f70df391fa505"
+  },
+  {
+    "id": "hourglass",
+    "source": "freeplane/src/viewer/resources/images/icons/hourglass.svg",
+    "sha256": "a5ae2a96d5f746eeaa6ab3a41f94d6e5dcf119b2d20d616aaac4e9b1d30efb57"
+  },
+  {
+    "id": "calendar",
+    "source": "freeplane/src/viewer/resources/images/icons/calendar.svg",
+    "sha256": "cd9c4fa03c6366ab14704d9a48bd72b1a6ba2f4782341b9c978d4fff90b487b7"
+  },
+  {
+    "id": "attach",
+    "source": "freeplane/src/viewer/resources/images/icons/attach.svg",
+    "sha256": "36bcecad34d1f1bdbef0fe2cc196b47dc3be868f7b3aa42858dd2ff515f9c343"
+  },
+  {
+    "id": "desktop_new",
+    "source": "freeplane/src/viewer/resources/images/icons/desktop_new.svg",
+    "sha256": "83aa44709aab1cbcbc75c2be45479b1a85f4609ae39ef0ecfb2617cdb5afff47"
+  },
+  {
+    "id": "list",
+    "source": "freeplane/src/viewer/resources/images/icons/list.svg",
+    "sha256": "4489684dba5b99738b20daec0b9f004f29dedcac6f122cc3a1e4920688574fe8"
+  },
+  {
+    "id": "edit",
+    "source": "freeplane/src/viewer/resources/images/icons/edit.svg",
+    "sha256": "94822747e6096a5d7a0da24172c9bf085140e37a0497e2a12a81052a481d69fa"
+  },
+  {
+    "id": "kaddressbook",
+    "source": "freeplane/src/viewer/resources/images/icons/kaddressbook.svg",
+    "sha256": "d78b441ec32102e3d6bd5937be75b4e208ccaa624ae6015543ea0fb42fd7a7fc"
+  },
+  {
+    "id": "folder",
+    "source": "freeplane/src/viewer/resources/images/icons/folder.svg",
+    "sha256": "e9cb30c6e01ce42fc2cd4d7e1c8c4a50cdedd0265cf1ee808dc270e83a074b51"
+  },
+  {
+    "id": "kmail",
+    "source": "freeplane/src/viewer/resources/images/icons/kmail.svg",
+    "sha256": "61f7609aec30cfa4d5265467b396bde5ba1446eef9ad07e7b10c77c0d9345715"
+  },
+  {
+    "id": "Mail",
+    "source": "freeplane/src/viewer/resources/images/icons/Mail.svg",
+    "sha256": "388a0f55f9ac34a894edeac024a866647a83b36128138b113b28f6e1ac2b59fd"
+  },
+  {
+    "id": "revision",
+    "source": "freeplane/src/viewer/resources/images/icons/revision.svg",
+    "sha256": "1196e230e6ee29d38071f4aa9d279ed93586c15bb5b1ca9e932d392b50baf931"
+  },
+  {
+    "id": "revision-green",
+    "source": "freeplane/src/viewer/resources/images/icons/revision-green.svg",
+    "sha256": "5214b6e2e21c23d7c983b2f2f1923adb3b91221fbce83299aa385a01abf786e8"
+  },
+  {
+    "id": "revision-pink",
+    "source": "freeplane/src/viewer/resources/images/icons/revision-pink.svg",
+    "sha256": "658516ee8018dcf5e51d64c95c656d91741ed13c3e1a7f186ad5d026c622c5bd"
+  },
+  {
+    "id": "revision-red",
+    "source": "freeplane/src/viewer/resources/images/icons/revision-red.svg",
+    "sha256": "62af7bac84891fc5cf53109e81280acf1fa2245ee823e20485e2419f95f31a75"
+  },
+  {
+    "id": "video",
+    "source": "freeplane/src/viewer/resources/images/icons/video.svg",
+    "sha256": "0b1b9430e4c69c09321fe5c1eb23abc7dfba57019932a9b862f900520041836a"
+  },
+  {
+    "id": "audio",
+    "source": "freeplane/src/viewer/resources/images/icons/audio.svg",
+    "sha256": "1df726937b864a0770c9b4f6e921265ae65c38a61decf830c84b7b10db4fe5bf"
+  },
+  {
+    "id": "executable",
+    "source": "freeplane/src/viewer/resources/images/icons/executable.svg",
+    "sha256": "c0121f40b2ae92c35cd9b87a9d424a31ec8ab6d4806b6521f9c44cf8decce964"
+  },
+  {
+    "id": "image",
+    "source": "freeplane/src/viewer/resources/images/icons/image.svg",
+    "sha256": "3a0c5e3b86cfdeb6c911584473b49526caf670875558c7811cbb36ade94e0e11"
+  },
+  {
+    "id": "internet",
+    "source": "freeplane/src/viewer/resources/images/icons/internet.svg",
+    "sha256": "b31f201ff76de92aa3e47482eb4a0c9219e92aa40392bd0fad485aeea242b28a"
+  },
+  {
+    "id": "internet_warning",
+    "source": "freeplane/src/viewer/resources/images/icons/internet_warning.svg",
+    "sha256": "a0df348e188c464fad60c104a6d71195678331dcf043d80448b400d2afd62db5"
+  },
+  {
+    "id": "mindmap",
+    "source": "freeplane/src/viewer/resources/images/icons/mindmap.svg",
+    "sha256": "87ab86d90006ff21644a999b52d01815f0ae337ebf932bb461ec39ca8aa7a952"
+  },
+  {
+    "id": "narrative",
+    "source": "freeplane/src/viewer/resources/images/icons/narrative.svg",
+    "sha256": "313fb4bed5b364c64ace8ef6750dbb3dcd2f31bc9915e8fc7c7d8194e60df51a"
+  },
+  {
+    "id": "flag-black",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-black.svg",
+    "sha256": "81b8e18178188965a7bca576164a91e587ccab69c4230ab3e5481efb4ee0954d"
+  },
+  {
+    "id": "flag-blue",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-blue.svg",
+    "sha256": "152222dee20c2b3c1a3b7dd7bd7701199c5b024b7560f5b3ad03ad1ba78d7888"
+  },
+  {
+    "id": "flag-green",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-green.svg",
+    "sha256": "387a7aee9e318b0913c1f1d896d1833a76e50f8a0968bf31b2090d8409333688"
+  },
+  {
+    "id": "flag-orange",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-orange.svg",
+    "sha256": "55d58bd349c308f39a52f9350a2232ccc38c413424f9dbfc33c605ccac64e536"
+  },
+  {
+    "id": "flag-pink",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-pink.svg",
+    "sha256": "7ddcbbb0d7b146daf8d0a40b82d1392001d0229b6b6539a818056bd40bf37c99"
+  },
+  {
+    "id": "flag",
+    "source": "freeplane/src/viewer/resources/images/icons/flag.svg",
+    "sha256": "c333e21116ff0c6331c2460933d37defe4ddaf8adefaa2bc0d0498315dbca343"
+  },
+  {
+    "id": "flag-yellow",
+    "source": "freeplane/src/viewer/resources/images/icons/flag-yellow.svg",
+    "sha256": "29f3b5f14e0879c844bb946be4f37a9481c5793f1256fe702cfb7ffc15c01629"
+  },
+  {
+    "id": "forward",
+    "source": "freeplane/src/viewer/resources/images/icons/forward.svg",
+    "sha256": "aefd09ce42988417dab9f9bb10462bb034e769d3e317f8bd82c928bbb6f909a4"
+  },
+  {
+    "id": "back",
+    "source": "freeplane/src/viewer/resources/images/icons/back.svg",
+    "sha256": "f66cc09f098ba2abdee4dd486b3b9408e7545620eed26659983173f5b187a9d2"
+  },
+  {
+    "id": "up",
+    "source": "freeplane/src/viewer/resources/images/icons/up.svg",
+    "sha256": "37ef3efc3f2bf87575e41a2e14d51b894bdf37e0157fb6f61119366776914eb8"
+  },
+  {
+    "id": "down",
+    "source": "freeplane/src/viewer/resources/images/icons/down.svg",
+    "sha256": "21ccaf7d99314e05e119a4862174b5f2f1ded593caf29c5583d9a4fa49063450"
+  },
+  {
+    "id": "addition",
+    "source": "freeplane/src/viewer/resources/images/icons/addition.svg",
+    "sha256": "4ae317928913d780dc10cea4b2c67da284cedcab6812a98f223312e6119a4d3b"
+  },
+  {
+    "id": "subtraction",
+    "source": "freeplane/src/viewer/resources/images/icons/subtraction.svg",
+    "sha256": "2848a0a4d13465bd9083f62bb248d9d95afcfe4e192d7baa33f80b57fc01ccea"
+  },
+  {
+    "id": "multiplication",
+    "source": "freeplane/src/viewer/resources/images/icons/multiplication.svg",
+    "sha256": "1175f1ab673b619e977099869b7a29c27fbb3b0a984e1adcdc047533b02c1491"
+  },
+  {
+    "id": "division",
+    "source": "freeplane/src/viewer/resources/images/icons/division.svg",
+    "sha256": "03b8d4f03332e1d1761385a209f81f87c254e19a7a137c1181199832ce5a6e7c"
+  },
+  {
+    "id": "links/DecoratedLink",
+    "source": "freeplane/src/viewer/resources/images/icons/links/DecoratedLink.svg",
+    "sha256": "6cbcafa112051c6d1bfd42b74e5624e7eda9bf9c5a2cc5060a1be2b16250639c"
+  },
+  {
+    "id": "links/DecoratedLinkLocal",
+    "source": "freeplane/src/viewer/resources/images/icons/links/DecoratedLinkLocal.svg",
+    "sha256": "b26123ee75d00dfa5eef2ce18b809a8d66077fa7459adc1229052bc34ffe0a1c"
+  },
+  {
+    "id": "links/DecoratedMail",
+    "source": "freeplane/src/viewer/resources/images/icons/links/DecoratedMail.svg",
+    "sha256": "dbb9265229da7bcaad1276bfe441959d6d340d9633dfed072f5347a60f95996b"
+  },
+  {
+    "id": "links/microsoft/file_ms_project",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_project.svg",
+    "sha256": "b6e85df1b94b4fd6b4d4118033c8fff0a15406d132e5ed851b5450fa1a0f3a1d"
+  },
+  {
+    "id": "links/microsoft/file_ms_word",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_word.svg",
+    "sha256": "6f77db124eb31cc29de00fa17fa28813b8e748e38f2d544fa7f5368b312d042c"
+  },
+  {
+    "id": "links/microsoft/file_ms_onenote",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_onenote.svg",
+    "sha256": "bf8caf516a24499ae3aa8a74710ee16d8a8a824955190e89bc9a91da0af54250"
+  },
+  {
+    "id": "links/microsoft/file_ms_outlook",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_outlook.svg",
+    "sha256": "180381cb9d58c2492298f3331aee10e63b8127127f96a6a96d475258fc940665"
+  },
+  {
+    "id": "links/microsoft/file_ms_access",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_access.svg",
+    "sha256": "8c64be81d0a89a2435494d7aafe0e5ad10616eb29757fc5e699105bcf6ea58cf"
+  },
+  {
+    "id": "links/microsoft/file_ms_powerpoint",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_powerpoint.svg",
+    "sha256": "2b6720f1bd570b603ee7b6bcd5ff5fa6709b0f90b9ddd7094216df496a757cee"
+  },
+  {
+    "id": "links/microsoft/file_ms_visio",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_visio.svg",
+    "sha256": "0dee79efbdabe37db4a770cbf0a380aa7c067eb0c1de849737b87171defa6bb5"
+  },
+  {
+    "id": "links/microsoft/file_ms_excel",
+    "source": "freeplane/src/viewer/resources/images/icons/links/microsoft/file_ms_excel.svg",
+    "sha256": "dc62bb916e2b950e60d04d573ec40c19dae66dacb49352b073b9587835170bfb"
+  },
+  {
+    "id": "links/code/file_SCSS",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_SCSS.svg",
+    "sha256": "b92ba5e98844962b0376479edfce9aeba1ae01f71fdc69e18db52fc50e81f213"
+  },
+  {
+    "id": "links/code/file_XSD",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_XSD.svg",
+    "sha256": "628c7eba502078696f012490ede7f135f361e260a7d8e438934107ec36957713"
+  },
+  {
+    "id": "links/code/file_Xcode_project",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Xcode_project.svg",
+    "sha256": "38450caa52c6f2e1201f22f312c2928a1c62376c9737294329d3dc3cfa93501f"
+  },
+  {
+    "id": "links/code/file_Javascript",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Javascript.svg",
+    "sha256": "f7fce819ccd22c5751f6808945908c5cabfbb8d934408cf69cd166941e8bea7c"
+  },
+  {
+    "id": "links/code/file_Typescript",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Typescript.svg",
+    "sha256": "30641f3e39f1d944c3c0eba043a121fc61d3abfb216a62417501436095cc5d5b"
+  },
+  {
+    "id": "links/code/file_Python",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Python.svg",
+    "sha256": "21bd59e00c320de725ccac080d5b519e7a4cac7e339953780f7a3507a27f1075"
+  },
+  {
+    "id": "links/code/file_Swift",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Swift.svg",
+    "sha256": "f88bdb9c66d3101f8f21a9809f921d81f94628af01e2d0cd995b60eccd5c7acc"
+  },
+  {
+    "id": "links/code/file_Java",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Java.svg",
+    "sha256": "68eb0e4fdee9d0c224df60b0b1c136ad0d60b0089d0a4ac0b4dc2ac3d0d182b2"
+  },
+  {
+    "id": "links/code/file_Xcode_playground",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Xcode_playground.svg",
+    "sha256": "e630335b0c74ac95f373700bcfcd236d7fd9263c60f0bfe3d7c661364d853417"
+  },
+  {
+    "id": "links/code/file_AppleScript",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_AppleScript.svg",
+    "sha256": "8c05bac87d29d7cb9f754eb74d5173f0f0b3173eb31abf412b745bd1a014547d"
+  },
+  {
+    "id": "links/code/file_C++_cpp",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_C++_cpp.svg",
+    "sha256": "d64aa6224dce68e880114d182db30e256d64dfa07bda601ace0e1c3340ff9892"
+  },
+  {
+    "id": "links/code/file_XML",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_XML.svg",
+    "sha256": "bc7ed78a4278ec0c98ef08ce556e968b42d0ac10bceab25978059a69e8814add"
+  },
+  {
+    "id": "links/sysadmin/shell_script",
+    "source": "freeplane/src/viewer/resources/images/icons/links/sysadmin/shell_script.svg",
+    "sha256": "f7a04ea489d71a254b2abcce38f1ca608340b1267b10bf257f9e245fc93891e1"
+  },
+  {
+    "id": "links/app/MarginNote",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/MarginNote.svg",
+    "sha256": "4bae4e5f6271dde3000f638196fc20feb909abd15cacdf1b0f3970606cd478e6"
+  },
+  {
+    "id": "links/app/Git",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Git.svg",
+    "sha256": "60a4010f31bced79a22205d1102d59d52e597a850415111debcf56c69c95060a"
+  },
+  {
+    "id": "links/app/Scapple",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Scapple.svg",
+    "sha256": "b0736b5aef195dad3f880883ae8764ab906d2578587da72fcfe7dfbadb7cd41b"
+  },
+  {
+    "id": "links/app/Things",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Things.svg",
+    "sha256": "d9a3d41465f9365fdc35ce12ab5b31c8a8b8aabf84f5347a4f50002d4b1be63d"
+  },
+  {
+    "id": "links/app/Accordance",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Accordance.svg",
+    "sha256": "813f0089d612ed13c6b97d363f19dca32db38cd87cc30f7b8f2b0b8c44b261d0"
+  },
+  {
+    "id": "links/app/QuickTime",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/QuickTime.svg",
+    "sha256": "d213995186e91a78bb19adbc14d3b8399640db5c8f3843d8e56d7493e81a9e82"
+  },
+  {
+    "id": "links/app/Marked2",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Marked2.svg",
+    "sha256": "360f0635f10a0d333f9dcd9c59d1f876c302afefb60769385bf1a05534747666"
+  },
+  {
+    "id": "links/app/Eclipse",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Eclipse.svg",
+    "sha256": "fd3725047b9593fb9ae7b578a2757213b7a7cf299bede3619292cad396143bb4"
+  },
+  {
+    "id": "links/app/OmniGraffle",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/OmniGraffle.svg",
+    "sha256": "4b618bf9ad4ad24ce11dede8b69554cbf7ed88d2b8d8d24dc2970768c92871c5"
+  },
+  {
+    "id": "links/app/Bear",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Bear.svg",
+    "sha256": "08addb8b8ddc880ea0a8fa369bd1213242513135dfeea53892e168a116814da1"
+  },
+  {
+    "id": "links/design/file_affinity_designer",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_affinity_designer.svg",
+    "sha256": "2439dfb5363fbde06da996b33c7b2c643d03b7ec847ba2a36bf2d750f33fae55"
+  },
+  {
+    "id": "links/design/file_affinity_photo",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_affinity_photo.svg",
+    "sha256": "eb4cad7d3e1ed0e8c5b11fbf15b1edfd56ea6aff1c21503d2abcbd9cb9b33158"
+  },
+  {
+    "id": "links/design/file_adobe_indesign",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_adobe_indesign.svg",
+    "sha256": "e38ff00863847535cf85e3ccec6c159739bc01a1a1a12e43187200d780ff90b8"
+  },
+  {
+    "id": "links/design/file_sketch",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_sketch.svg",
+    "sha256": "4ee59cb70b4338525b77450eb9ce340da1dba0b7517504569510cde8f2faaec9"
+  },
+  {
+    "id": "links/design/file_affinity_publisher",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_affinity_publisher.svg",
+    "sha256": "80a28baf1493ced1fcf8c6a9e404e5674e6218328a213c811aa172f54baacd38"
+  },
+  {
+    "id": "links/folder/folder",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/folder.svg",
+    "sha256": "0f09d62658cb8175add5a161c2130480269622dc97b30399ad3ff37fbf58da83"
+  },
+  {
+    "id": "links/link/network_share",
+    "source": "freeplane/src/viewer/resources/images/icons/links/link/network_share.svg",
+    "sha256": "089695944e6c3b6086e28a6cc0defbcc5e13038d8db1566406353e2a494b1206"
+  },
+  {
+    "id": "links/link/web_ssl",
+    "source": "freeplane/src/viewer/resources/images/icons/links/link/web_ssl.svg",
+    "sha256": "d50c7b0f275f7f64eb0b178bfe452cff1ade034457ea325d9ce5986eb3b4b594"
+  },
+  {
+    "id": "links/link/web",
+    "source": "freeplane/src/viewer/resources/images/icons/links/link/web.svg",
+    "sha256": "6d4aacc1c7e7b02e01d91c0f659408185bac11f0a189f4aea8a203f3a8c30c54"
+  },
+  {
+    "id": "links/file/png",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/png.svg",
+    "sha256": "19322a3da9fc08a03fa28183f331b3204711ba6528c60fde6615c30d6d058507"
+  },
+  {
+    "id": "links/file/webarchive",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/webarchive.svg",
+    "sha256": "7426e02c0b55f18a0aec7705061cf11c9ccde82321bc912835b6f8b6e6b6ea37"
+  },
+  {
+    "id": "links/file/markdown",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/markdown.svg",
+    "sha256": "46f05ad3c2682dfba5f886fabd82608ba0bfbd429f725d188c04bc80b3bd0d22"
+  },
+  {
+    "id": "links/file/video_avi",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/video_avi.svg",
+    "sha256": "ba259be4fd22224e2cd3bbea7d5eaffd049c9b5838e7cf8acf7fb7f6a295d9a5"
+  },
+  {
+    "id": "links/file/cmd",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/cmd.svg",
+    "sha256": "228dfc900472634d9b603a788ed84af52fd73fa4b17a808dbcecc23d794e800c"
+  },
+  {
+    "id": "links/file/batch",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/batch.svg",
+    "sha256": "4f19efafbad2a7d93bd4099e2411b240287d1d47fc158dc67e25a08f79876ff3"
+  },
+  {
+    "id": "links/file/txt",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/txt.svg",
+    "sha256": "352031f911c1243bac4addef9023b12b5b95170324145c05100777737e7f2ea5"
+  },
+  {
+    "id": "links/file/html",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/html.svg",
+    "sha256": "9efa93e9eb9eb67fe11dff23fc70bd20399969c2aab9c62833f71535ffb7f0c8"
+  },
+  {
+    "id": "links/file/freeplane_mindmap",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/freeplane_mindmap.svg",
+    "sha256": "b119a56a74e7f3b25d35a047dd765e47ae2be7c0b2dfc35356db82373d00ac90"
+  },
+  {
+    "id": "links/file/pdf",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/pdf.svg",
+    "sha256": "f548f69af2c486f9bd8b4ff3afb86fb5963d0fcfb22b82670e3872850d4ecaba"
+  },
+  {
+    "id": "links/file/email_envelope",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/email_envelope.svg",
+    "sha256": "b2cedead1a360bf4a74db33b8a90be7fbe7fe14f274176e15dc30ee9ef9d9137"
+  },
+  {
+    "id": "links/file/png_image_graphic",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/png_image_graphic.svg",
+    "sha256": "4a257eb4eb47385122736ba292ecf05205fee48682af51c734d875a61d8e37a0"
+  },
+  {
+    "id": "links/file/email",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/email.svg",
+    "sha256": "32e8b69cfd3bb02067b86179a673cc60ebcd5dc8838bbc6665e927439ad199f1"
+  },
+  {
+    "id": "links/file/json",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/json.svg",
+    "sha256": "1b5f97b3e0e9f2114d0d7bb62e392c3395bd185593876e9354ea4efbdf39e49e"
+  },
+  {
+    "id": "links/file/book_ePub",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/book_ePub.svg",
+    "sha256": "1acb7ddbd4c73d684c1e184633c0aa0b066fdcb38f186985eacfe9dcee24a766"
+  },
+  {
+    "id": "links/file/exe",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/exe.svg",
+    "sha256": "d9c619ac0090b3a83fcaac750a309935bc28d3eb33ae3c0c677d330883148dfe"
+  },
+  {
+    "id": "links/file/tsv",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/tsv.svg",
+    "sha256": "58fecfc9f0fe1c331d9fec7049c1e9a1cd281bfaeeca8e4318f3946c2bf8a524"
+  },
+  {
+    "id": "links/file/zip",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/zip.svg",
+    "sha256": "2ec6815adcb658f3c548c1aead1334db0ef7513d902a3b31baaf0944407f550b"
+  },
+  {
+    "id": "links/file/m4a_audio_sound_music",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/m4a_audio_sound_music.svg",
+    "sha256": "ca8db570230dc6e4a883a11acc41aa07c54e9b8da62a3ee43a033fe784d3e239"
+  },
+  {
+    "id": "links/file/audio_mp3_music",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/audio_mp3_music.svg",
+    "sha256": "0d76268d635995dc1fc88cbe9486c28cbad3ee7d7d3fcba907d252f5318ef168"
+  },
+  {
+    "id": "links/file/generic",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/generic.svg",
+    "sha256": "463d2377258e29e73578cc5e0a6155d4426760ed083c10308280d6a80e9b62ff"
+  },
+  {
+    "id": "links/file/css",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/css.svg",
+    "sha256": "a09f92491660e4b745f94b1405ab8bc99ff43f521c777a46454f30e849dedfcb"
+  },
+  {
+    "id": "links/file/csv",
+    "source": "freeplane/src/viewer/resources/images/icons/links/file/csv.svg",
+    "sha256": "1554a44ddcff6649ee5634b513f5782a9dd7150f280b72b6c110a79185da04e2"
+  },
+  {
+    "id": "links/libreoffice/file_doc_texthtml",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_texthtml.svg",
+    "sha256": "d84112a083fc5a890412de4443bbfd60c9f978e7257a33a2ae302d19a129132c"
+  },
+  {
+    "id": "links/libreoffice/file_doc_presentation",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_presentation.svg",
+    "sha256": "5657b93067b1d7bb622ba8eae4cd850f0b8b34a315fdd3f52d143c22ebf26aa8"
+  },
+  {
+    "id": "links/libreoffice/file_template_drawing",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_template_drawing.svg",
+    "sha256": "509f8de4f66add667a2a01c29d5685da1d633e6d5343fb8ee11d0c924f00161d"
+  },
+  {
+    "id": "links/libreoffice/file_template_spreadsheet",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_template_spreadsheet.svg",
+    "sha256": "28087074cbb092a6da8f02182ffd1b90b8ba6b046acd11e7c3fe9a3852546c23"
+  },
+  {
+    "id": "links/libreoffice/file_doc_spreadsheet",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_spreadsheet.svg",
+    "sha256": "6be71e4dcb94a6c05dcb481a9a91e495e6f7f82ff8c67e47e8ec8ca78b4261b8"
+  },
+  {
+    "id": "links/libreoffice/file_template_texthtml",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_template_texthtml.svg",
+    "sha256": "6d44df3a69ab37158d873f1e1a5b4fb9556064247b0fbbced5331a41e53c41aa"
+  },
+  {
+    "id": "links/libreoffice/file_template_presentation",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_template_presentation.svg",
+    "sha256": "8595868ce01506828c2cd19145cf6df9dc40da10c7d1b5df4096a36b456d17bd"
+  },
+  {
+    "id": "links/libreoffice/file_doc_drawing",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_drawing.svg",
+    "sha256": "9b18469cceb1d7fe1642585969fc6e5e01b854ca1dd7284ee83d54f72d2b26f4"
+  },
+  {
+    "id": "links/libreoffice/file_template_text",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_template_text.svg",
+    "sha256": "f718f2f763315c3725567eef6e539df1f332e45470cbf5e3b35b47a293e798ad"
+  },
+  {
+    "id": "links/libreoffice/file_doc_text",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_text.svg",
+    "sha256": "df96b36635203bdbf8e5bd66c1b941af16c72d5fa1ebe4fcba9698d2d07aba72"
+  },
+  {
+    "id": "links/libreoffice/file_doc_database",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/file_doc_database.svg",
+    "sha256": "2748277df1d81145c0419b6a24ea291d0ce45e5e631b6731bbe30b6b263fc11c"
+  },
+  {
+    "id": "decrypted",
+    "source": "freeplane/src/viewer/resources/images/icons/decrypted.svg",
+    "sha256": "90075de07e835e7ccff378dc5bf616ab9b8908fbf10c32cd745d0eb2e5a63970"
+  },
+  {
+    "id": "encrypted",
+    "source": "freeplane/src/viewer/resources/images/icons/encrypted.svg",
+    "sha256": "c5bc6275786aa996f0bd873f5736583df3566b0354a8a3dcb0843edaa93efde7"
+  },
+  {
+    "id": "korn",
+    "source": "freeplane/src/viewer/resources/images/icons/korn.svg",
+    "sha256": "230c8b8f10b336927ba7a7dee70d3c0bd91734d01b03728b2917451de089af9d"
+  },
+  {
+    "id": "links/app/QuickTime_alt",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/QuickTime_alt.svg",
+    "sha256": "a19124225adff9b69dd5e6fd25e2c3deaaddde75b5eaaa70c6ee3ee8439cf99e"
+  },
+  {
+    "id": "links/app/Sketch",
+    "source": "freeplane/src/viewer/resources/images/icons/links/app/Sketch.svg",
+    "sha256": "b92d0f9c4d1fe0126c08b6d7fbf2fcee4d015e16f525bd5eeb3e57c8ed4df14d"
+  },
+  {
+    "id": "links/cloud/cloud_AWS",
+    "source": "freeplane/src/viewer/resources/images/icons/links/cloud/cloud_AWS.svg",
+    "sha256": "abd401889af87191e0141369db0007e2451cdae35598f89e28c1c90ff9fbdde2"
+  },
+  {
+    "id": "links/cloud/cloud_Azure",
+    "source": "freeplane/src/viewer/resources/images/icons/links/cloud/cloud_Azure.svg",
+    "sha256": "2807a982756ebfcaadf63c028644cf0f2a231ab651f76ea94c9ddb09946685a2"
+  },
+  {
+    "id": "links/code/file_CSS",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_CSS.svg",
+    "sha256": "d120c761999c1011a5e7c2558c5c1c88b9a36c0c5ad296a6b2906bc5f28967f8"
+  },
+  {
+    "id": "links/code/file_RxSwift",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_RxSwift.svg",
+    "sha256": "de5f66ce6d822b7f96f7cb7c1d296a1b01e1e11d84c6ab15bddd71f7a413080b"
+  },
+  {
+    "id": "links/code/file_Shell",
+    "source": "freeplane/src/viewer/resources/images/icons/links/code/file_Shell.svg",
+    "sha256": "f7d9f520e80e5ec184b6b7b3fcf473d5222be57d859f1551073b8dff3199c906"
+  },
+  {
+    "id": "links/design/file_photoshop_psd",
+    "source": "freeplane/src/viewer/resources/images/icons/links/design/file_photoshop_psd.svg",
+    "sha256": "ca78dfd015bc96aafb683563805304603ce31dcb5689f8e29d8a9b0a0b497241"
+  },
+  {
+    "id": "links/folder/inputs",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/inputs.svg",
+    "sha256": "c129aecdb3d0803f4a9c31c36fe249782024022ad23abd8bdf85999bd4b82fb2"
+  },
+  {
+    "id": "links/folder/key",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/key.svg",
+    "sha256": "797b789f89a1b1831fbc0f04d83b8369c237c53461d7c031efcd834a405cf82f"
+  },
+  {
+    "id": "links/folder/outputs",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/outputs.svg",
+    "sha256": "fb4267078e2f4ae7b91b151b78ae017cdb7999129ec0077f25b0edf74099c712"
+  },
+  {
+    "id": "links/folder/task",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/task.svg",
+    "sha256": "b304c19e1e7448064974cca0b102fd9e4ff10ed04e0be2e0a0c211b047f0e6e5"
+  },
+  {
+    "id": "links/folder/user",
+    "source": "freeplane/src/viewer/resources/images/icons/links/folder/user.svg",
+    "sha256": "30a78d9ca0049b809681eeb6ba33564bdfc8aac3cda5eaaee99bb0e84b32f0b7"
+  },
+  {
+    "id": "links/libreoffice/chart",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/chart.svg",
+    "sha256": "2905fe1696316c6e7140a5c0315106cb00a51f2a63c75077e8e7f576369abc4a"
+  },
+  {
+    "id": "links/libreoffice/installer",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/installer.svg",
+    "sha256": "9d28af8d4f363ddedba6147bdc735541da94a5f39fff58c7aca905ac289a1a48"
+  },
+  {
+    "id": "links/libreoffice/macro",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/macro.svg",
+    "sha256": "c19efa5ec983283f2b524e3d71080459561cb495812bdf0cac9a4e8055688548"
+  },
+  {
+    "id": "links/libreoffice/master_document",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/master_document.svg",
+    "sha256": "bb7fb500666a542eb3ceb3a14dafe5c1816ef0956528f36adba6b96d4ba34568"
+  },
+  {
+    "id": "links/libreoffice/math",
+    "source": "freeplane/src/viewer/resources/images/icons/links/libreoffice/math.svg",
+    "sha256": "45163bc175d0e3353834b1199b5aaf6af2184132fbc27d9b6f98a3b18fec3e10"
+  },
+  {
+    "id": "user_icon",
+    "source": "freeplane/src/viewer/resources/images/icons/user_icon.svg",
+    "sha256": "62f0f2262b22f1f2114c5b567a42773aadc531767b87c008ec00467e05859dbc"
+  }
+]

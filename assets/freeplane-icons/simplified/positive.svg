@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 32.499888 32.499889" width="24" height="24">
+<defs>
+<radialGradient id="spafa6e9ab3ac6-a" gradientUnits="userSpaceOnUse" cy="209.68" cx="231.3" gradientTransform="matrix(1.1422 .98944 -.52685 .60822 79.582 -147.53)" r="54.625">
+<stop stop-color="#f7f7f7" offset="0" />
+<stop stop-color="#7d7373" offset="1" />
+</radialGradient>
+</defs>
+<g transform="translate(-165.27 -205.77)">
+<g transform="translate(-436.83,-84.222)">
+<path font-size="61.543px" d="m308.65 219.91a51.206 51.206 0 0 1 -51.21 51.21 51.206 51.206 0 0 1 -51.21 -51.21 51.206 51.206 0 0 1 51.21 -51.21 51.206 51.206 0 0 1 51.21 51.21z" fill-rule="evenodd" transform="matrix(.29291 0 0 .29291 542.94 241.83)" stroke="#038103" stroke-width="8.5352" fill="#bab5b5" />
+<g font-size="57.759px" transform="matrix(1.0002,0,0,1.0002,172.74,-203.13)" font-family="Arial" fill="#008000">
+<text y="586.23639" x="387.50137" transform="scale(1.1218 .89142)" space="preserve">
+<tspan font-size="57.759px" y="586.23639" x="387.50137" font-family="Arial" fill="#008000">-</tspan>
+</text>
+<text y="514.73151" x="-463.58392" transform="matrix(0 -1.1218 .89142 0 0 0)" space="preserve">
+<tspan font-size="57.759px" y="514.73151" x="-463.58392" font-family="Arial" fill="#008000">-</tspan>
+</text>
+</g>
+</g>
+</g>
+</svg>
