@@ -1,6 +1,6 @@
 [package]
 name = "mindglider"
-version = "0.9.0"
+version = "0.10.0"
 edition = "2024"
 license = "GPL-3.0-or-later"
 authors = ["GisukeStonewell"]
@@ -41,7 +41,8 @@ url = "2"
 toml_edit = { version = "0.25.17", default-features = false, features = ["parse"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_JobObjects", "Win32_Security"] }
+raw-window-handle = "0.6"
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Storage_FileSystem", "Win32_System_Threading", "Win32_System_JobObjects", "Win32_Security", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
 
 [dev-dependencies]
 tempfile = "3"

@@ -13,7 +13,7 @@ packages = [p for p in metadata["packages"] if p["id"] in active and p["name"] !
 out = root / "licenses"
 out.mkdir(exist_ok=True)
 rows = ["# Third-party components", "", "Versions are pinned in Cargo.lock. License texts supplied by the packages are in licenses/.", "", "Windows system fonts are loaded from the user's Windows installation and are not redistributed.", "", "| Package | Version | Declared license | License files |", "|---|---|---|---|"]
-rows[2:2] = ["Freeplane由来のアイコンと翻訳には元の権利表記を保持しています。出典と変更内容は assets/freeplane-icons/README.md を参照してください。", "Freeplane icons and translated labels retain their upstream attribution. See assets/freeplane-icons/README.md (source/assets/freeplane-icons/README.md in the portable ZIP).", "", "依存ライブラリのバージョンは Cargo.lock に固定し、取得できたライセンス文書を licenses/ に収録しています。OSのフォントは再配布しません。egui内蔵フォントのライセンスは licenses/epaint_default_fonts-0.31.1/fonts/ にあります。", ""]
+rows[2:2] = ["Freeplane由来のアイコンと翻訳には元の権利表記を保持しています。出典と変更内容は assets/freeplane-icons/README.md を参照してください。", "Freeplane icons and translated labels retain their upstream attribution. See assets/freeplane-icons/README.md.", "", "依存ライブラリのバージョンは Cargo.lock に固定し、取得できたライセンス文書を licenses/ に収録しています。OSのフォントは再配布しません。egui内蔵フォントのライセンスは licenses/epaint_default_fonts-0.31.1/fonts/ にあります。", ""]
 for pkg in sorted(packages, key=lambda p: (p["name"], p["version"])):
     if pkg["name"] == "mindglider":
         continue

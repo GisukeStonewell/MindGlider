@@ -1,7 +1,7 @@
 # Third-party components
 
 Freeplane由来のアイコンと翻訳には元の権利表記を保持しています。出典と変更内容は assets/freeplane-icons/README.md を参照してください。
-Freeplane icons and translated labels retain their upstream attribution. See assets/freeplane-icons/README.md (source/assets/freeplane-icons/README.md in the portable ZIP).
+Freeplane icons and translated labels retain their upstream attribution. See assets/freeplane-icons/README.md.
 
 依存ライブラリのバージョンは Cargo.lock に固定し、取得できたライセンス文書を licenses/ に収録しています。OSのフォントは再配布しません。egui内蔵フォントのライセンスは licenses/epaint_default_fonts-0.31.1/fonts/ にあります。
 

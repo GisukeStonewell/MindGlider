@@ -1,3 +1,4 @@
+use crate::theme::{self, Theme};
 use crate::ui_helpers::*;
 use anyhow::{Context, Result, ensure};
 use eframe::egui::{self, Align2, Color32, FontId, Pos2, Rect, Sense, Stroke, StrokeKind, Vec2};
@@ -106,6 +107,8 @@ struct Settings {
     tabs: Vec<SavedTab>,
     active: usize,
     page: PageSetup,
+    theme: Option<Theme>,
+    #[serde(default, skip_serializing)]
     dark: bool,
     icon_panel_open: bool,
     #[serde(default = "default_inspector_open")]
@@ -128,6 +131,7 @@ impl Default for Settings {
             tabs: vec![],
             active: 0,
             page: PageSetup::default(),
+            theme: None,
             dark: false,
             icon_panel_open: false,
             inspector_open: true,
@@ -193,6 +197,8 @@ struct MenuState {
     open: bool,
     selected: usize,
     item: usize,
+    theme_item: Option<usize>,
+    theme_rows: Vec<(Theme, Rect)>,
     alt_was_down: bool,
     alt_used: bool,
 }
@@ -302,7 +308,7 @@ impl MindGlider {
         if let Err(e) = mindglider::i18n::initialize(&settings.language) {
             status = msg("app.037", &[("e", format!("{e}"))]);
         }
-        crate::theme::apply(&cc.egui_ctx, settings.dark);
+        theme::apply(&cc.egui_ctx, settings.theme.unwrap_or_default());
         let mut tabs = vec![];
         let smoke = args
             .iter()
@@ -993,13 +999,11 @@ impl MindGlider {
 
     fn toolbar(&mut self, ctx: &egui::Context) {
         let mut action = None;
-        let mut change = None;
-        let mut close = None;
         let mut menu_rects = vec![];
         egui::TopBottomPanel::top("top")
             .frame(
                 egui::Frame::NONE
-                    .fill(crate::theme::palette(self.settings.dark).background)
+                    .fill(theme::current(ctx).background)
                     .inner_margin(egui::Margin {
                         left: 12,
                         right: 12,
@@ -1018,121 +1022,427 @@ impl MindGlider {
                 let compact = ui.available_width() < 1120.;
                 ui.scope(|ui| {
                     ui.spacing_mut().button_padding = egui::vec2(8., 4.);
-                    ui.horizontal(|ui| {
-                        ui.set_min_height(32.);
-                        for (index, label) in [
-                            tr("app.175"),
-                            tr("app.174"),
-                            tr("app.173"),
-                            tr("app.172"),
-                            tr("app.171"),
-                        ]
-                        .into_iter()
-                        .enumerate()
-                        {
-                            let text = if self.menu.active && self.menu.selected == index {
-                                egui::RichText::new(label).underline()
-                            } else {
-                                egui::RichText::new(label)
-                            };
-                            let response = crate::theme::flat_button(
-                                ui,
-                                text,
-                                self.menu.active && self.menu.selected == index,
-                            );
-                            menu_rects.push(response.rect);
-                            if response.clicked() {
-                                let same = self.menu.active
-                                    && self.menu.selected == index
-                                    && self.menu.open;
-                                self.menu.active = !same;
-                                self.menu.selected = index;
-                                self.menu.open = !same;
-                                self.menu.item = 0;
-                            }
-                            if self.menu.active
-                                && self.menu.open
-                                && response.hovered()
-                                && ctx.input(|i| i.pointer.delta() != Vec2::ZERO)
+                    let bar_start = ui.cursor().min;
+                    let width = ui.available_width();
+                    let menu_end = ui
+                        .horizontal(|ui| {
+                            ui.set_min_height(32.);
+                            ui.spacing_mut().interact_size.y = 28.;
+                            ui.add_space(164.);
+                            for (index, label) in [
+                                tr("app.175"),
+                                tr("app.174"),
+                                tr("app.173"),
+                                tr("app.172"),
+                                tr("app.171"),
+                            ]
+                            .into_iter()
+                            .enumerate()
                             {
-                                self.menu.selected = index;
-                                self.menu.item = 0;
+                                let text = if self.menu.active && self.menu.selected == index {
+                                    egui::RichText::new(label).underline()
+                                } else {
+                                    egui::RichText::new(label)
+                                };
+                                let response = crate::theme::flat_button(
+                                    ui,
+                                    text,
+                                    self.menu.active && self.menu.selected == index,
+                                );
+                                menu_rects.push(response.rect);
+                                if response.clicked() {
+                                    self.menu.theme_item = None;
+                                    let same = self.menu.active
+                                        && self.menu.selected == index
+                                        && self.menu.open;
+                                    self.menu.active = !same;
+                                    self.menu.selected = index;
+                                    self.menu.open = !same;
+                                    self.menu.item = 0;
+                                }
+                                if self.menu.active
+                                    && self.menu.open
+                                    && self.menu.selected != index
+                                    && response.hovered()
+                                    && ctx.input(|i| i.pointer.delta() != Vec2::ZERO)
+                                {
+                                    self.menu.selected = index;
+                                    self.menu.item = 0;
+                                    self.menu.theme_item = None;
+                                }
+                            }
+                        })
+                        .response
+                        .rect
+                        .right();
+                    self.title_row(
+                        ui,
+                        Rect::from_min_size(bar_start, egui::vec2(width, 32.)),
+                        menu_end,
+                    );
+                });
+                let strip = ui.painter().add(egui::Shape::Noop);
+                let strip_rect = ui
+                    .horizontal_wrapped(|ui| {
+                        ui.set_min_height(32.);
+                        ui.spacing_mut().interact_size.y = 30.;
+                        for (id, label) in [
+                            ("child", tr("app.168")),
+                            ("sibling", tr("app.167")),
+                            ("fold", tr("app.130")),
+                            ("undo", tr("app.166")),
+                            ("redo", tr("app.165")),
+                            ("fit", tr("app.164")),
+                        ] {
+                            if theme::tool_button(ui, id, label).clicked() {
+                                action = Some(id);
+                            }
+                        }
+                        ui.separator();
+                        let t = &mut self.tabs[self.active];
+                        ui.add(
+                            egui::Slider::new(&mut t.zoom, 0.15..=3.)
+                                .logarithmic(true)
+                                .show_value(false),
+                        );
+                        ui.label(format!("{:.0}%", t.zoom * 100.));
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if crate::theme::accent_button(
+                                ui,
+                                &if compact {
+                                    "\u{e8bd}".into()
+                                } else {
+                                    format!("✦  {}", command_label("ai"))
+                                },
+                            )
+                            .on_hover_text(format!(
+                                "{} ({})",
+                                command_label("ai"),
+                                self.settings
+                                    .shortcuts
+                                    .get("ai")
+                                    .map(String::as_str)
+                                    .unwrap_or("F12")
+                            ))
+                            .clicked()
+                            {
+                                action = Some("ai");
+                            }
+                        });
+                        if self.filter_active && ui.button(tr("app.163")).clicked() {
+                            self.filter_active = false;
+                            t.layout_revision = u64::MAX;
+                        }
+                    })
+                    .response
+                    .rect;
+                ui.painter().set(
+                    strip,
+                    egui::Shape::rect_filled(
+                        strip_rect.expand2(egui::vec2(12., 0.)),
+                        0.,
+                        theme::current(ctx).surface,
+                    ),
+                );
+            });
+        self.menu_rects = menu_rects;
+        if self.menu.active && self.menu.open {
+            let anchor = self
+                .menu_rects
+                .get(self.menu.selected)
+                .map(|r| r.left_bottom())
+                .unwrap_or(Pos2::ZERO);
+            let choices = menu_commands(self.menu.selected);
+            let mut popup_rect = Rect::NOTHING;
+            let mut theme_row = None;
+            egui::Area::new(egui::Id::new("menu-popup"))
+                .order(egui::Order::Foreground)
+                .fixed_pos(anchor)
+                .show(ctx, |ui| {
+                    let popup = egui::Frame::popup(ui.style()).show(ui, |ui| {
+                        ui.set_min_width(260.);
+                        for (index, id) in choices.iter().enumerate() {
+                            let is_theme = *id == "theme";
+                            let label = if is_theme {
+                                tr("menu.theme")
+                            } else {
+                                command_label(id)
+                            };
+                            let key = self
+                                .settings
+                                .shortcuts
+                                .get(*id)
+                                .cloned()
+                                .unwrap_or_default();
+                            let (row, response) =
+                                ui.allocate_exact_size(egui::vec2(300., 36.), Sense::click());
+                            let p = theme::current(ctx);
+                            if self.menu.item == index || response.hovered() {
+                                ui.painter().rect_filled(row, 4., p.hover);
+                            }
+                            ui.painter().text(
+                                row.left_center() + egui::vec2(12., 0.),
+                                Align2::LEFT_CENTER,
+                                label,
+                                FontId::proportional(14.),
+                                p.text,
+                            );
+                            ui.painter().text(
+                                row.right_center() - egui::vec2(12., 0.),
+                                Align2::RIGHT_CENTER,
+                                if is_theme { "›".into() } else { key },
+                                FontId::proportional(12.),
+                                p.secondary,
+                            );
+                            if is_theme {
+                                theme_row = Some(row);
+                            }
+                            if response.hovered() && ctx.input(|i| i.pointer.delta() != Vec2::ZERO)
+                            {
+                                self.menu.item = index;
+                                if is_theme {
+                                    self.menu.theme_item.get_or_insert(0);
+                                } else {
+                                    self.menu.theme_item = None;
+                                }
+                            }
+                            if response.clicked() {
+                                if is_theme {
+                                    self.menu.theme_item.get_or_insert(0);
+                                } else {
+                                    action = Some(*id);
+                                    self.menu = MenuState::default();
+                                }
                             }
                         }
                     });
+                    popup_rect = popup.response.rect;
                 });
-                ui.horizontal_wrapped(|ui| {
-                    ui.set_min_height(32.);
-                    for (id, label) in [
-                        ("child", tr("app.168")),
-                        ("sibling", tr("app.167")),
-                        ("fold", tr("app.130")),
-                        ("undo", tr("app.166")),
-                        ("redo", tr("app.165")),
-                        ("fit", tr("app.164")),
-                    ] {
-                        let glyph = match id {
-                            "child" => "\u{e710}",
-                            "sibling" => "\u{e710}",
-                            "fold" => "\u{e70d}",
-                            "undo" => "\u{e7a7}",
-                            "redo" => "\u{e7a6}",
-                            _ => "\u{e9a6}",
-                        };
-                        if crate::theme::flat_button(ui, format!("{glyph}  {label}"), false)
-                            .clicked()
-                        {
-                            action = Some(id);
+            let submenu_rect = if let (Some(row), Some(index)) = (theme_row, self.menu.theme_item) {
+                self.theme_submenu(ctx, popup_rect, row, index)
+            } else {
+                self.menu.theme_rows.clear();
+                Rect::NOTHING
+            };
+            if ctx.input(|i| i.pointer.any_pressed())
+                && ctx.input(|i| i.pointer.interact_pos()).is_some_and(|p| {
+                    !popup_rect.contains(p)
+                        && !submenu_rect.contains(p)
+                        && !self.menu_rects.iter().any(|r| r.contains(p))
+                })
+            {
+                self.menu = MenuState::default();
+            }
+        }
+        if self.menu.theme_item.is_none()
+            && theme::current(ctx).canvas
+                != theme::palette(self.settings.theme.unwrap_or_default()).canvas
+        {
+            ctx.request_repaint();
+        }
+        if let Some(id) = action {
+            let result = self.action(id, ctx);
+            self.result(result);
+        }
+    }
+    fn title_row(&self, ui: &mut egui::Ui, bar: Rect, menu_end: f32) {
+        let controls = Rect::from_min_max(
+            egui::pos2(bar.right() - 132., bar.top()),
+            bar.right_bottom(),
+        );
+        let draggable = Rect::from_min_max(egui::pos2(menu_end, bar.top()), controls.left_bottom());
+        let drag = ui.interact(
+            draggable,
+            ui.id().with("title-drag"),
+            Sense::click_and_drag(),
+        );
+        let maximized = ui.input(|i| i.viewport().maximized.unwrap_or(false));
+        if drag.double_clicked() {
+            ui.ctx()
+                .send_viewport_cmd(egui::ViewportCommand::Maximized(!maximized));
+        } else if drag.drag_started() {
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
+        }
+        let p = theme::current(ui.ctx());
+        egui::Image::new(egui::include_image!("../assets/icons/mindglider.png")).paint_at(
+            ui,
+            Rect::from_center_size(bar.left_center() + egui::vec2(8., 0.), egui::vec2(16., 16.)),
+        );
+        ui.painter().text(
+            bar.left_center() + egui::vec2(22., 0.),
+            Align2::LEFT_CENTER,
+            "MindGlider",
+            FontId::proportional(14.),
+            p.text,
+        );
+        let title = self.tabs[self.active].name();
+        let available = Rect::from_min_max(
+            draggable.left_top() + egui::vec2(10., 0.),
+            draggable.right_bottom() - egui::vec2(10., 0.),
+        );
+        let title_room = available.width().clamp(0., 240.) / 2.;
+        let title_center = egui::pos2(
+            bar.center().x.clamp(
+                available.left() + title_room,
+                (available.right() - title_room).max(available.left() + title_room),
+            ),
+            bar.center().y,
+        );
+        ui.painter().with_clip_rect(available).text(
+            title_center,
+            Align2::CENTER_CENTER,
+            title,
+            FontId::proportional(13.),
+            p.secondary,
+        );
+        for (i, (glyph, tip, command)) in [
+            (
+                "\u{e921}",
+                tr("window.minimize"),
+                egui::ViewportCommand::Minimized(true),
+            ),
+            (
+                if maximized { "\u{e923}" } else { "\u{e922}" },
+                if maximized {
+                    tr("window.restore")
+                } else {
+                    tr("window.maximize")
+                },
+                egui::ViewportCommand::Maximized(!maximized),
+            ),
+            ("\u{e8bb}", tr("ui.close_tip"), egui::ViewportCommand::Close),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let rect = Rect::from_min_size(
+                controls.min + egui::vec2(i as f32 * 44., 0.),
+                egui::vec2(44., 28.),
+            );
+            if ui
+                .put(rect, egui::Button::new(glyph).frame(false))
+                .on_hover_text(tip)
+                .clicked()
+            {
+                ui.ctx().send_viewport_cmd(command);
+            }
+        }
+    }
+
+    fn theme_submenu(
+        &mut self,
+        ctx: &egui::Context,
+        parent: Rect,
+        row: Rect,
+        index: usize,
+    ) -> Rect {
+        const WIDTH: f32 = 190.;
+        const HEIGHT: f32 = 340.;
+        let screen = ctx.screen_rect();
+        let x = if parent.right() + WIDTH <= screen.right() {
+            parent.right() - 1.
+        } else {
+            parent.left() - WIDTH + 1.
+        };
+        let y = row.top().min(screen.bottom() - HEIGHT).max(screen.top());
+        let mut rows = Vec::with_capacity(Theme::ALL.len());
+        let mut picked = None;
+        let rect = egui::Area::new(egui::Id::new("theme-submenu"))
+            .order(egui::Order::Foreground)
+            .fixed_pos(egui::pos2(x, y))
+            .show(ctx, |ui| {
+                egui::Frame::popup(ui.style())
+                    .show(ui, |ui| {
+                        ui.spacing_mut().item_spacing.y = 0.;
+                        for (i, candidate) in Theme::ALL.into_iter().enumerate() {
+                            let (rect, response) =
+                                ui.allocate_exact_size(egui::vec2(172., 32.), Sense::click());
+                            let p = theme::current(ctx);
+                            if response.hovered() || i == index {
+                                ui.painter().rect_filled(rect, 4., p.hover);
+                            }
+                            let swatch = theme::palette(candidate);
+                            ui.painter().rect_filled(
+                                Rect::from_center_size(
+                                    rect.left_center() + egui::vec2(15., 0.),
+                                    egui::vec2(15., 15.),
+                                ),
+                                3.,
+                                swatch.accent,
+                            );
+                            ui.painter().text(
+                                rect.left_center() + egui::vec2(30., 0.),
+                                Align2::LEFT_CENTER,
+                                candidate.name(),
+                                FontId::proportional(14.),
+                                p.text,
+                            );
+                            if self.settings.theme.unwrap_or_default() == candidate {
+                                ui.painter().text(
+                                    rect.right_center() - egui::vec2(8., 0.),
+                                    Align2::RIGHT_CENTER,
+                                    "✓",
+                                    FontId::proportional(14.),
+                                    p.text,
+                                );
+                            }
+                            if response.hovered() && ctx.input(|i| i.pointer.delta() != Vec2::ZERO)
+                            {
+                                self.menu.theme_item = Some(i);
+                            }
+                            if response.clicked() {
+                                picked = Some(candidate);
+                            }
+                            rows.push((candidate, rect));
                         }
-                    }
-                    ui.separator();
-                    let t = &mut self.tabs[self.active];
-                    ui.add(
-                        egui::Slider::new(&mut t.zoom, 0.15..=3.)
-                            .logarithmic(true)
-                            .show_value(false),
-                    );
-                    ui.label(format!("{:.0}%", t.zoom * 100.));
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if crate::theme::accent_button(
-                            ui,
-                            &if compact {
-                                "\u{e8bd}".into()
-                            } else {
-                                format!("\u{e8bd}  {}", command_label("ai"))
-                            },
-                        )
-                        .on_hover_text(format!(
-                            "{} ({})",
-                            command_label("ai"),
-                            self.settings
-                                .shortcuts
-                                .get("ai")
-                                .map(String::as_str)
-                                .unwrap_or("F12")
-                        ))
-                        .clicked()
-                        {
-                            action = Some("ai");
-                        }
-                    });
-                    if self.filter_active && ui.button(tr("app.163")).clicked() {
-                        self.filter_active = false;
-                        t.layout_revision = u64::MAX;
-                    }
-                });
+                    })
+                    .response
+                    .rect
+            })
+            .inner;
+        if let Some(theme) = picked {
+            self.select_theme(theme, ctx);
+        } else {
+            if self.menu.theme_rows != rows {
+                ctx.request_repaint();
+            }
+            self.menu.theme_rows = rows;
+        }
+        rect
+    }
+
+    fn select_theme(&mut self, theme: Theme, ctx: &egui::Context) {
+        self.settings.theme = Some(theme);
+        self.menu = MenuState::default();
+        let result = self.save_session();
+        self.result(result);
+        ctx.request_repaint();
+    }
+
+    fn file_tabs(&mut self, ctx: &egui::Context) {
+        let mut action = None;
+        let mut change = None;
+        let mut close = None;
+        egui::TopBottomPanel::bottom("file-tabs")
+            .frame(
+                egui::Frame::NONE
+                    .fill(theme::current(ctx).background)
+                    .inner_margin(egui::Margin::symmetric(12, 0)),
+            )
+            .show(ctx, |ui| {
+                ui.spacing_mut().interact_size.y = 26.;
                 egui::ScrollArea::horizontal()
                     .id_salt("tabs")
                     .show(ui, |ui| {
                         ui.horizontal(|ui| {
-                            ui.set_min_height(32.);
+                            ui.set_min_height(28.);
                             for (index, t) in self.tabs.iter().enumerate() {
                                 let title = format!(
                                     "{}{}",
                                     if t.history.dirty { "● " } else { "" },
                                     t.name()
                                 );
-                                let p = crate::theme::palette(self.settings.dark);
+                                let p = theme::current(ctx);
                                 let tab = egui::Frame::new()
                                     .fill(if self.active == index {
                                         p.canvas
@@ -1150,7 +1460,7 @@ impl MindGlider {
                                         ui.horizontal(|ui| {
                                             if ui
                                                 .add_sized(
-                                                    [160., 32.],
+                                                    [160., 28.],
                                                     egui::Button::new(title)
                                                         .frame(false)
                                                         .truncate(),
@@ -1161,7 +1471,7 @@ impl MindGlider {
                                             }
                                             if ui
                                                 .add_sized(
-                                                    [32., 32.],
+                                                    [28., 28.],
                                                     egui::Button::new("\u{e711}").frame(false),
                                                 )
                                                 .on_hover_text(tr("app.170"))
@@ -1180,7 +1490,7 @@ impl MindGlider {
                                 }
                             }
                             if ui
-                                .add_sized([32., 32.], egui::Button::new("\u{e710}").frame(false))
+                                .add_sized([28., 28.], egui::Button::new("\u{e710}").frame(false))
                                 .on_hover_text(tr("app.169"))
                                 .clicked()
                             {
@@ -1189,68 +1499,6 @@ impl MindGlider {
                         });
                     });
             });
-        self.menu_rects = menu_rects;
-        if self.menu.active && self.menu.open {
-            let anchor = self
-                .menu_rects
-                .get(self.menu.selected)
-                .map(|r| r.left_bottom())
-                .unwrap_or(Pos2::ZERO);
-            let choices = menu_commands(self.menu.selected);
-            let mut popup_rect = Rect::NOTHING;
-            egui::Area::new(egui::Id::new("menu-popup"))
-                .order(egui::Order::Foreground)
-                .fixed_pos(anchor)
-                .show(ctx, |ui| {
-                    let popup = egui::Frame::popup(ui.style()).show(ui, |ui| {
-                        ui.set_min_width(260.);
-                        for (index, id) in choices.iter().enumerate() {
-                            let label = command_label(id);
-                            let key = self
-                                .settings
-                                .shortcuts
-                                .get(*id)
-                                .cloned()
-                                .unwrap_or_default();
-                            let (row, response) =
-                                ui.allocate_exact_size(egui::vec2(300., 36.), Sense::click());
-                            let p = crate::theme::palette(self.settings.dark);
-                            if self.menu.item == index || response.hovered() {
-                                ui.painter().rect_filled(row, 4., p.hover);
-                            }
-                            ui.painter().text(
-                                row.left_center() + egui::vec2(12., 0.),
-                                Align2::LEFT_CENTER,
-                                label,
-                                FontId::proportional(14.),
-                                p.text,
-                            );
-                            ui.painter().text(
-                                row.right_center() - egui::vec2(12., 0.),
-                                Align2::RIGHT_CENTER,
-                                key,
-                                FontId::proportional(12.),
-                                p.secondary,
-                            );
-                            if response.hovered() {
-                                self.menu.item = index;
-                            }
-                            if response.clicked() {
-                                action = Some(*id);
-                                self.menu = MenuState::default();
-                            }
-                        }
-                    });
-                    popup_rect = popup.response.rect;
-                });
-            if ctx.input(|i| i.pointer.any_pressed())
-                && ctx.input(|i| i.pointer.interact_pos()).is_some_and(|p| {
-                    !popup_rect.contains(p) && !self.menu_rects.iter().any(|r| r.contains(p))
-                })
-            {
-                self.menu = MenuState::default();
-            }
-        }
         if let Some(index) = change {
             let result = self.finish_inline(true);
             self.result(result);
@@ -1267,6 +1515,7 @@ impl MindGlider {
             self.result(result);
         }
     }
+
     fn menu_keys(&mut self, ctx: &egui::Context) -> bool {
         let alt = ctx.input(|i| i.modifiers.alt);
         let pressed = ctx.input(|i| {
@@ -1304,9 +1553,56 @@ impl MindGlider {
             self.menu.open = true;
             self.menu.selected = index;
             self.menu.item = 0;
+            self.menu.theme_item = None;
         }
         if !self.menu.active {
             return false;
+        }
+        if self.menu.selected == 2 && self.menu.open {
+            let current = menu_commands(2)[self.menu.item];
+            let key = ctx.input(|i| {
+                [
+                    egui::Key::Escape,
+                    egui::Key::ArrowLeft,
+                    egui::Key::ArrowRight,
+                    egui::Key::ArrowUp,
+                    egui::Key::ArrowDown,
+                    egui::Key::Enter,
+                ]
+                .into_iter()
+                .find(|key| i.key_pressed(*key))
+            });
+            if let Some(key) = key {
+                if let Some(index) = self.menu.theme_item {
+                    match key {
+                        egui::Key::Escape | egui::Key::ArrowLeft => self.menu.theme_item = None,
+                        egui::Key::ArrowUp => {
+                            self.menu.theme_item =
+                                Some((index + Theme::ALL.len() - 1) % Theme::ALL.len())
+                        }
+                        egui::Key::ArrowDown => {
+                            self.menu.theme_item = Some((index + 1) % Theme::ALL.len())
+                        }
+                        egui::Key::Enter => self.select_theme(Theme::ALL[index], ctx),
+                        _ => {}
+                    }
+                    ctx.input_mut(|i| {
+                        i.events.retain(|e| {
+                            !matches!(e, egui::Event::Key { .. } | egui::Event::Text(_))
+                        })
+                    });
+                    return true;
+                }
+                if current == "theme" && matches!(key, egui::Key::Enter | egui::Key::ArrowRight) {
+                    self.menu.theme_item = Some(0);
+                    ctx.input_mut(|i| {
+                        i.events.retain(|e| {
+                            !matches!(e, egui::Event::Key { .. } | egui::Event::Text(_))
+                        })
+                    });
+                    return true;
+                }
+            }
         }
         let mut action = None;
         ctx.input_mut(|i| {
@@ -1355,9 +1651,7 @@ impl MindGlider {
     fn icon_sidebar(&mut self, ctx: &egui::Context) {
         if !self.settings.icon_panel_open {
             egui::SidePanel::left("icons-collapsed")
-                .frame(
-                    egui::Frame::new().fill(crate::theme::palette(self.settings.dark).background),
-                )
+                .frame(egui::Frame::new().fill(theme::current(ctx).background))
                 .exact_width(24.)
                 .resizable(false)
                 .show(ctx, |ui| {
@@ -1376,6 +1670,7 @@ impl MindGlider {
                 .default_width(88.)
                 .min_width(88.)
                 .max_width(240.)
+                .frame(egui::Frame::side_top_panel(&ctx.style()).fill(theme::current(ctx).surface))
                 .show(ctx, |ui| {
                     ui.horizontal(|ui| {
                         ui.spacing_mut().item_spacing.x = 4.;
@@ -1394,12 +1689,11 @@ impl MindGlider {
                     egui::ScrollArea::vertical()
                         .auto_shrink([false, false])
                         .show(ui, |ui| {
-                            let columns =
-                                ((ui.available_width() + 2.) / 28.).floor().max(2.) as usize;
+                            let columns = (ui.available_width() / 36.).floor().max(2.) as usize;
                             egui::Grid::new("sidebar-icons")
                                 .min_col_width(0.)
                                 .num_columns(columns)
-                                .spacing([2., 2.])
+                                .spacing([12., 1.])
                                 .show(ui, |ui| {
                                     for (index, icon) in mindglider::icons::CATALOG
                                         .iter()
@@ -1463,9 +1757,7 @@ impl MindGlider {
         }
         if !self.settings.inspector_open {
             egui::SidePanel::right("inspector-collapsed")
-                .frame(
-                    egui::Frame::new().fill(crate::theme::palette(self.settings.dark).background),
-                )
+                .frame(egui::Frame::new().fill(theme::current(ctx).background))
                 .exact_width(24.)
                 .resizable(false)
                 .show(ctx, |ui| {
@@ -1499,29 +1791,29 @@ impl MindGlider {
         let mut connectors = self.tabs[self.active].history.doc.connectors.clone();
         let original_connectors = connectors.clone();
         egui::SidePanel::right("inspector")
-            .default_width(336.)
+            .default_width(300.)
             .min_width(300.)
             .resizable(true)
             .frame(
                 egui::Frame::new()
-                    .fill(crate::theme::palette(self.settings.dark).surface)
-                    .inner_margin(16)
+                    .fill(theme::current(ctx).surface)
+                    .inner_margin(12)
                     .stroke(Stroke::NONE),
             )
             .show(ctx, |ui| {
                 ui.add_space(8.);
                 ui.horizontal(|ui| {
-                    ui.heading(tr("app.138"));
-                    if ui.button("›").on_hover_text(tr("panels.close")).clicked() {
-                        close_panel = true;
-                    }
+                    ui.label(egui::RichText::new(tr("app.138")).size(17.).strong());
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui.button("›").on_hover_text(tr("panels.close")).clicked() {
+                            close_panel = true;
+                        }
+                    });
                 });
-                ui.label(
-                    egui::RichText::new(&id)
-                        .small()
-                        .color(crate::theme::palette(self.settings.dark).secondary),
-                );
-                ui.add_space(16.);
+                ui.add_space(8.);
+                ui.spacing_mut().item_spacing.x = 5.;
+                ui.spacing_mut().item_spacing.y = 4.;
+                ui.visuals_mut().collapsing_header_frame = false;
                 if locked {
                     ui.colored_label(Color32::from_rgb(180, 90, 25), tr("app.162"));
                 }
@@ -1781,6 +2073,7 @@ impl MindGlider {
         } else {
             None
         };
+        let palette = theme::current(ctx);
         let t = &mut self.tabs[self.active];
         if t.layout_revision != t.history.revision {
             t.layout.build(&t.history.doc, filter, |s, size| {
@@ -1795,10 +2088,7 @@ impl MindGlider {
         let mut drop_commit = None;
         let mut double_click = false;
         egui::CentralPanel::default()
-            .frame(
-                egui::Frame::central_panel(&ctx.style())
-                    .fill(crate::theme::palette(self.settings.dark).canvas),
-            )
+            .frame(egui::Frame::central_panel(&ctx.style()).fill(palette.canvas))
             .show(ctx, |ui| {
                 let available = ui.available_rect_before_wrap();
                 t.canvas_rect = available;
@@ -1870,7 +2160,10 @@ impl MindGlider {
                         painter.rect_filled(r, 18., color(c).gamma_multiply(0.6));
                     }
                 }
-                let placed = t.layout.scene.nodes.clone();
+                let mut placed = t.layout.scene.nodes.clone();
+                for node in &mut placed {
+                    palette.map_style(&mut node.style);
+                }
                 let by_id: BTreeMap<_, _> = placed.iter().map(|n| (n.id.as_str(), n)).collect();
                 for (a, b) in &t.layout.scene.edges {
                     if let (Some(a), Some(b)) = (by_id.get(a.as_str()), by_id.get(b.as_str())) {
@@ -1928,7 +2221,7 @@ impl MindGlider {
                     let n = &t.history.doc.nodes[&p.id];
                     let selected = t.selection.contains(&p.id);
                     let border = if selected {
-                        Stroke::new(2.5_f32, crate::theme::palette(self.settings.dark).accent)
+                        Stroke::new(2.5_f32, palette.accent)
                     } else {
                         Stroke::new(1.0_f32, color(&p.style.edge_color))
                     };
@@ -2005,7 +2298,7 @@ impl MindGlider {
                             );
                             let valid = plan.is_ok();
                             let tint = if valid {
-                                crate::theme::palette(self.settings.dark).accent
+                                palette.accent
                             } else {
                                 Color32::from_rgb(196, 43, 28)
                             };
@@ -2185,12 +2478,7 @@ impl MindGlider {
                         .x
                         .max(r.min.x + text_size.x + (2. * pad.x + icon_width) * zoom);
                     r.max.y = r.max.y.max(r.min.y + text_size.y + 2. * pad.y * zoom);
-                    paint_node(
-                        &painter,
-                        r,
-                        &p.style,
-                        Stroke::new(2.5_f32, crate::theme::palette(self.settings.dark).accent),
-                    );
+                    paint_node(&painter, r, &p.style, Stroke::new(2.5_f32, palette.accent));
                     if p.style.shape == "fork" {
                         painter.rect_filled(
                             Rect::from_min_size(
@@ -2288,7 +2576,7 @@ impl MindGlider {
                     painter.rect_stroke(
                         sel,
                         0.,
-                        Stroke::new(1.0_f32, crate::theme::palette(self.settings.dark).accent),
+                        Stroke::new(1.0_f32, palette.accent),
                         StrokeKind::Inside,
                     );
                     t.selection = placed
@@ -2941,17 +3229,14 @@ impl MindGlider {
                             ui.painter().hline(
                                 response.rect.x_range(),
                                 response.rect.bottom(),
-                                Stroke::new(
-                                    2.0_f32,
-                                    crate::theme::palette(self.settings.dark).accent,
-                                ),
+                                Stroke::new(2.0_f32, theme::current(ctx).accent),
                             );
                         }
                     }
                 });
                 ui.add_space(16.);
                 egui::Frame::new()
-                    .fill(crate::theme::palette(self.settings.dark).background)
+                    .fill(theme::current(ctx).background)
                     .corner_radius(8)
                     .inner_margin(16)
                     .show(ui, |ui| {
@@ -3001,12 +3286,6 @@ impl MindGlider {
                                                 if reset_button(ui) {
                                                     self.settings.language =
                                                         defaults.language.clone();
-                                                }
-                                                ui.end_row();
-                                                ui.label(tr("app.101"));
-                                                ui.checkbox(&mut self.settings.dark, tr("app.100"));
-                                                if reset_button(ui) {
-                                                    self.settings.dark = defaults.dark;
                                                 }
                                                 ui.end_row();
                                             });
@@ -3384,7 +3663,6 @@ impl MindGlider {
                 }
             }
         }
-        crate::theme::apply(ctx, self.settings.dark);
         if save && !valid_timeout {
             self.status = tr("cli.timeout_invalid").into();
         } else if save {
@@ -3859,8 +4137,8 @@ impl MindGlider {
     }
 }
 impl eframe::App for MindGlider {
-    // Deterministic pointer gestures for --smoke-view drag-* verification only.
     fn raw_input_hook(&mut self, _ctx: &egui::Context, input: &mut egui::RawInput) {
+        // Deterministic pointer gestures for --smoke-view drag-* verification only.
         let Some(mode) = self
             .smoke_drag_mode
             .clone()
@@ -3943,7 +4221,6 @@ impl eframe::App for MindGlider {
         {
             ctx.set_pixels_per_point(scale);
         }
-        crate::theme::apply(ctx, self.settings.dark);
         ctx.input_mut(|i| {
             if !i.focused {
                 self.ime_guard.reset();
@@ -3960,16 +4237,35 @@ impl eframe::App for MindGlider {
             self.closing = Some(Closing::Quit);
         }
         self.keyboard(ctx);
+        let committed = self.settings.theme.unwrap_or_default();
+        let preview = self
+            .menu
+            .theme_item
+            .filter(|_| self.menu.active && self.menu.open && self.menu.selected == 2)
+            .and_then(|_| {
+                ctx.input(|i| {
+                    i.pointer.hover_pos().filter(|_| i.focused).and_then(|pos| {
+                        self.menu
+                            .theme_rows
+                            .iter()
+                            .find(|(_, rect)| rect.contains(pos))
+                            .map(|(theme, _)| *theme)
+                    })
+                })
+            });
+        theme::apply(ctx, preview.unwrap_or(committed));
         self.toolbar(ctx);
         egui::TopBottomPanel::bottom("status")
+            .exact_height(24.)
             .frame(
                 egui::Frame::NONE
-                    .fill(crate::theme::palette(self.settings.dark).background)
-                    .inner_margin(egui::Margin::symmetric(12, 4)),
+                    .fill(theme::current(ctx).background)
+                    .inner_margin(egui::Margin::symmetric(12, 2)),
             )
             .show(ctx, |ui| {
+                ui.spacing_mut().interact_size.y = 18.;
                 ui.horizontal_centered(|ui| {
-                    ui.set_min_height(24.);
+                    ui.set_min_height(18.);
                     let t = &self.tabs[self.active];
                     let count = msg(
                         "app.027",
@@ -3984,7 +4280,7 @@ impl eframe::App for MindGlider {
                             .x
                     }) + 24.;
                     ui.allocate_ui_with_layout(
-                        egui::vec2((ui.available_width() - right).max(20.), 24.),
+                        egui::vec2((ui.available_width() - right).max(20.), 18.),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
                             ui.set_min_size(ui.available_size());
@@ -3992,7 +4288,7 @@ impl eframe::App for MindGlider {
                                 egui::Label::new(
                                     egui::RichText::new(&self.status)
                                         .size(12.)
-                                        .color(crate::theme::palette(self.settings.dark).secondary),
+                                        .color(theme::current(ctx).secondary),
                                 )
                                 .truncate(),
                             )
@@ -4004,10 +4300,11 @@ impl eframe::App for MindGlider {
                     ui.label(
                         egui::RichText::new(count)
                             .size(12.)
-                            .color(crate::theme::palette(self.settings.dark).secondary),
+                            .color(theme::current(ctx).secondary),
                     );
                 });
             });
+        self.file_tabs(ctx);
         self.icon_sidebar(ctx);
         self.inspector(ctx);
         self.canvas(ctx);
@@ -4108,7 +4405,15 @@ fn menu_commands(index: usize) -> &'static [&'static str] {
             "undo", "redo", "copy", "cut", "paste", "edit", "icons", "child", "sibling", "parent",
             "delete", "side",
         ],
-        2 => &["fit", "find", "filter", "styles", "icon_panel", "inspector"],
+        2 => &[
+            "fit",
+            "find",
+            "filter",
+            "styles",
+            "icon_panel",
+            "inspector",
+            "theme",
+        ],
         3 => &["ai", "palette", "settings"],
         _ => &["about"],
     }
@@ -4128,6 +4433,11 @@ fn reset_button(ui: &mut egui::Ui) -> bool {
 }
 impl Settings {
     fn migrate(&mut self) {
+        self.theme.get_or_insert(if self.dark {
+            Theme::SandNight
+        } else {
+            Theme::Sand
+        });
         self.shortcuts
             .entry("icons".into())
             .or_insert_with(|| "Ctrl+F2".into());
@@ -4147,7 +4457,6 @@ impl Settings {
         self.cli = defaults.cli;
         self.shortcuts = defaults.shortcuts;
         self.page = defaults.page;
-        self.dark = defaults.dark;
         self.icon_panel_open = defaults.icon_panel_open;
         self.inspector_open = defaults.inspector_open;
         self.language = defaults.language;
@@ -4334,7 +4643,7 @@ fn draw_map_node(
             Align2::LEFT_BOTTOM,
             badge,
             FontId::proportional(11. * zoom),
-            Color32::from_rgb(65, 92, 125),
+            color(&p.style.color),
         );
     }
     if !n.details.text().is_empty() {
@@ -4343,7 +4652,7 @@ fn draw_map_node(
             Align2::LEFT_BOTTOM,
             n.details.text().lines().next().unwrap_or_default(),
             FontId::proportional(11. * zoom),
-            Color32::GRAY,
+            color(&p.style.color),
         );
     }
 }

@@ -3,6 +3,8 @@ use mindglider::i18n::msg;
 mod app;
 mod theme;
 mod ui_helpers;
+#[cfg(windows)]
+mod windows_frame;
 use mindglider::{
     layout::LayoutCache,
     model::{Document, History},
@@ -94,6 +96,7 @@ fn run() -> anyhow::Result<()> {
         persistence_path: Some(mindglider::storage::data_dir().join("ui")),
         viewport: eframe::egui::ViewportBuilder::default()
             .with_icon(icon)
+            .with_decorations(false)
             .with_inner_size([1320., 860.])
             .with_min_inner_size([900., 600.])
             .with_maximized(args.iter().any(|a| a == "--smoke")),
@@ -102,7 +105,11 @@ fn run() -> anyhow::Result<()> {
     eframe::run_native(
         "MindGlider",
         options,
-        Box::new(move |cc| Ok(Box::new(app::MindGlider::new(cc, args, start)))),
+        Box::new(move |cc| {
+            #[cfg(windows)]
+            windows_frame::install_resize_border(cc)?;
+            Ok(Box::new(app::MindGlider::new(cc, args, start)))
+        }),
     )
     .map_err(|e| anyhow::anyhow!("{e}"))
 }

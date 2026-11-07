@@ -1948,6 +1948,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "mindglider"
+version = "0.10.0"
+dependencies = [
+ "anyhow",
+ "arboard",
+ "base64 0.22.1",
+ "eframe",
+ "egui_extras",
+ "image",
+ "pdf-writer",
+ "raw-window-handle",
+ "regex",
+ "resvg",
+ "rfd",
+ "serde",
+ "serde_json",
+ "svg2pdf",
+ "tempfile",
+ "toml_edit",
+ "url",
+ "uuid",
+ "webbrowser",
+ "windows-sys 0.59.0",
+ "xmltree",
+]
+
+[[package]]
 name = "miniz_oxide"
 version = "0.8.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3216,32 +3243,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd538fb6910ac1099850255cf94a94df6551fbdd602454387d0adb2d1ca6dead"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "mindglider"
-version = "0.9.0"
-dependencies = [
- "anyhow",
- "arboard",
- "base64 0.22.1",
- "eframe",
- "egui_extras",
- "image",
- "pdf-writer",
- "regex",
- "resvg",
- "rfd",
- "serde",
- "serde_json",
- "svg2pdf",
- "tempfile",
- "toml_edit",
- "url",
- "uuid",
- "webbrowser",
- "windows-sys 0.59.0",
- "xmltree",
 ]
 
 [[package]]

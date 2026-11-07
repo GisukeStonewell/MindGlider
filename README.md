@@ -8,7 +8,9 @@
 
 ## ダウンロード
 
-[GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases)から`MindGlider-0.9.0-windows-x64.zip`をダウンロードし、書き込み可能な場所へ展開して`mindglider.exe`を起動します。Java・Rustのインストールは不要です。ZIPのSHA-256は同じリリースの`SHA256SUMS.txt`で確認できます。
+[GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases)から`MindGlider-0.10.0-windows-x64.zip`をダウンロードし、書き込み可能な場所へ展開して`mindglider.exe`を起動します。Java・Rustのインストールは不要です。ZIPのSHA-256は同じリリースの`SHA256SUMS.txt`で確認できます。
+
+「表示 → テーマ」から10色を選択できます。候補にマウスを重ねると一時的に画面へ反映され、クリックすると保存されます。対応するソースコードは同じリリースの「Source code」から取得できます。
 
 対象は**Windows 11 x64**です。初回公開版はGitHub上でPre-release（試用版）として扱います。通常のマインドマップ編集にAI用CLIは不要です。
 

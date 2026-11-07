@@ -453,7 +453,7 @@ pub fn rich_editor(ui: &mut egui::Ui, id: &str, rich: &mut RichText, rows: usize
         }
         let mut c = ui
             .data(|d| d.get_temp::<Color32>(editor_id.with("color")))
-            .unwrap_or(Color32::from_rgb(30, 60, 100));
+            .unwrap_or_else(|| ui.visuals().text_color());
         if ui.color_edit_button_srgba(&mut c).changed() {
             rich.format(range.start, range.end, |m| m.color = Some(hex(c)));
             ui.data_mut(|d| d.insert_temp(editor_id.with("color"), c));
@@ -770,7 +770,7 @@ mod combo_layout_tests {
     #[test]
     fn editable_combo_stays_inside_its_requested_width() {
         let ctx = egui::Context::default();
-        crate::theme::apply(&ctx, false);
+        crate::theme::apply(&ctx, crate::theme::Theme::Sand);
         let mut text = String::new();
         for _ in 0..4 {
             let _ = ctx.run(Default::default(), |ctx| {
@@ -799,7 +799,7 @@ mod shortcut_layout_tests {
     #[test]
     fn shortcut_text_is_visible_and_hover_cannot_expand_the_row() {
         let ctx = egui::Context::default();
-        crate::theme::apply(&ctx, false);
+        crate::theme::apply(&ctx, crate::theme::Theme::Sand);
         let mut value = "Ctrl+Shift+Alt+ArrowRight".to_owned();
         let mut pointer = egui::Pos2::ZERO;
         for frame in 0..4 {
@@ -844,7 +844,7 @@ mod integrated_combo_tests {
     #[test]
     fn combo_is_one_grid_cell_and_keyboard_can_choose_history() {
         let ctx = egui::Context::default();
-        crate::theme::apply(&ctx, false);
+        crate::theme::apply(&ctx, crate::theme::Theme::Sand);
         let mut text = String::new();
         let items = vec![
             ("first".into(), "First".into()),

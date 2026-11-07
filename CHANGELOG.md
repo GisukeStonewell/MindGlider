@@ -1,5 +1,11 @@
 # Changelog / 変更履歴
 
+## 0.10.0 — Sand themes / Sandテーマ
+
+Sandを基調とした新しい画面、表示メニューの配色プレビュー、アプリ配布ZIPの構成変更。詳細は[日英リリースノート](docs/releases/v0.10.0.md)をご覧ください。
+
+The Sand interface, theme previews in the View menu, and an updated portable package. See the [bilingual release notes](docs/releases/v0.10.0.md).
+
 ## 0.9.0 — First public preview / 初回公開試用版
 
 Initial public release of MindGlider. See the [bilingual release notes](docs/releases/v0.9.0.md) for features, limits and validation. Versions before 0.9.0 were local development iterations, not public releases of this repository.

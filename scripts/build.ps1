@@ -37,12 +37,6 @@ try {
         $exampleDir = Join-Path $bundleDir 'examples'
         New-Item -ItemType Directory -Force $exampleDir | Out-Null
         Copy-Item -LiteralPath 'artifacts/showcase/showcase.mm' -Destination (Join-Path $exampleDir 'Example.mm')
-        $sourceDir = Join-Path $bundleDir 'source'
-        New-Item -ItemType Directory -Force $sourceDir | Out-Null
-        Copy-Item -LiteralPath ($publicFiles + @('Cargo.toml','Cargo.lock','build.rs','rust-toolchain.toml','.gitignore','.gitattributes')) -Destination $sourceDir
-        foreach ($folder in @('src','tests','examples','scripts','docs','licenses','.cargo','.github','assets','locales')) {
-            Copy-Item -LiteralPath $folder -Destination $sourceDir -Recurse
-        }
         New-Item -ItemType Directory -Force dist | Out-Null
         $archive = Join-Path $projectDir ('dist/' + $bundleName + '.zip')
         # ZipFile includes dotfiles, unlike Compress-Archive on Windows.
