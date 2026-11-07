@@ -1423,14 +1423,19 @@ impl MindGlider {
         let mut action = None;
         let mut change = None;
         let mut close = None;
+        let palette = theme::current(ctx);
+        let canvas_width = ctx.available_rect().x_range();
         egui::TopBottomPanel::bottom("file-tabs")
+            .show_separator_line(false)
             .frame(
                 egui::Frame::NONE
-                    .fill(theme::current(ctx).background)
+                    .fill(palette.background)
                     .inner_margin(egui::Margin::symmetric(12, 0)),
             )
             .show(ctx, |ui| {
                 ui.spacing_mut().interact_size.y = 26.;
+                let top = ui.cursor().min.y;
+                let mut joined_tab = None;
                 egui::ScrollArea::horizontal()
                     .id_salt("tabs")
                     .show(ui, |ui| {
@@ -1442,18 +1447,18 @@ impl MindGlider {
                                     if t.history.dirty { "● " } else { "" },
                                     t.name()
                                 );
-                                let p = theme::current(ctx);
+                                let selected = self.active == index;
                                 let tab = egui::Frame::new()
-                                    .fill(if self.active == index {
-                                        p.canvas
+                                    .fill(if selected {
+                                        palette.canvas
                                     } else {
-                                        p.background
+                                        palette.background
                                     })
                                     .corner_radius(egui::CornerRadius {
-                                        nw: 8,
-                                        ne: 8,
-                                        sw: 0,
-                                        se: 0,
+                                        nw: 0,
+                                        ne: 0,
+                                        sw: 8,
+                                        se: 8,
                                     })
                                     .inner_margin(egui::Margin::symmetric(8, 0))
                                     .show(ui, |ui| {
@@ -1481,12 +1486,11 @@ impl MindGlider {
                                             }
                                         });
                                     });
-                                if self.active == index {
-                                    ui.painter().hline(
-                                        tab.response.rect.x_range(),
-                                        tab.response.rect.bottom(),
-                                        Stroke::new(2_f32, p.accent),
-                                    );
+                                if selected {
+                                    let visible = tab.response.rect.intersect(ui.clip_rect());
+                                    if visible.is_positive() {
+                                        joined_tab = Some(visible.x_range());
+                                    }
                                 }
                             }
                             if ui
@@ -1498,6 +1502,15 @@ impl MindGlider {
                             }
                         });
                     });
+                // Leave the canvas seam open where the selected tab extends into the strip.
+                let stroke = Stroke::new(1_f32, palette.border);
+                let y = top + 0.5;
+                if let Some(tab) = joined_tab {
+                    ui.painter().hline(canvas_width.min..=tab.min, y, stroke);
+                    ui.painter().hline(tab.max..=canvas_width.max, y, stroke);
+                } else {
+                    ui.painter().hline(canvas_width, y, stroke);
+                }
             });
         if let Some(index) = change {
             let result = self.finish_inline(true);
@@ -4304,9 +4317,9 @@ impl eframe::App for MindGlider {
                     );
                 });
             });
-        self.file_tabs(ctx);
         self.icon_sidebar(ctx);
         self.inspector(ctx);
+        self.file_tabs(ctx);
         self.canvas(ctx);
         self.dialogs(ctx);
         if self.first_frame {
