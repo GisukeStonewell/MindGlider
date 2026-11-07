@@ -26,7 +26,7 @@ eframe = { version = "=0.31.1", default-features = false, features = ["default_f
 egui_extras = { version = "=0.31.1", features = ["image", "file"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-xmltree = { version = "0.11", features = ["attribute-order"] }
+xmltree = { version = "0.12", features = ["attribute-order"] }
 regex = "1"
 uuid = { version = "1", features = ["v4"] }
 rfd = "0.15"
