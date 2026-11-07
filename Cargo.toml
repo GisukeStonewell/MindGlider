@@ -35,7 +35,7 @@ resvg = "0.45"
 svg2pdf = "0.13"
 webbrowser = "1"
 arboard = "3"
-base64 = "0.22"
+base64 = "0.23"
 pdf-writer = "0.12"
 url = "2"
 toml_edit = { version = "0.25.17", default-features = false, features = ["parse"] }
