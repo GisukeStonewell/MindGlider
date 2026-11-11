@@ -1,0 +1,12 @@
+{
+  "extends": "./node_modules/@microsoft/rush-stack-compiler-5.3/includes/tsconfig-web.json",
+  "compilerOptions": {
+    "target": "es2017",
+    "outDir": "lib",
+    "rootDir": "src",
+    "types": [],
+    "skipLibCheck": true,
+    "lib": ["es2017", "dom"]
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -22,6 +22,12 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.13'
+      - uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: '10.0.404'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22.23.4'
       - name: Install pinned Rust toolchain
         run: rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
       - name: Check version and release notes
@@ -39,14 +45,33 @@ jobs:
         run: cargo test --locked --tests
       - name: Clippy
         run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Test SharePoint requests against a virtual server
+        run: dotnet run --project sharepoint/MindGlider.SharePoint.csproj -- --self-test
+      - name: Test and package the SharePoint command
+        working-directory: sharepoint-extension
+        run: |
+          npm ci --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          npm run package
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build portable ZIP and verify contents and notices
         shell: pwsh
         run: ./scripts/build.ps1 -Package
+      - name: Stage and checksum the SharePoint command
+        shell: pwsh
+        run: |
+          $asset = 'mindglider-sharepoint.sppkg'
+          Copy-Item "sharepoint-extension/sharepoint/solution/$asset" dist/
+          $hash = (Get-FileHash "dist/$asset" -Algorithm SHA256).Hash.ToLowerInvariant()
+          Add-Content -Path dist/SHA256SUMS.txt -Value "$hash  $asset" -Encoding utf8
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: windows-release
           path: |
             dist/*.zip
+            dist/*.sppkg
             dist/SHA256SUMS.txt
           if-no-files-found: error
   publish-draft:
@@ -69,5 +94,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          gh release create $env:RELEASE_TAG dist/*.zip dist/SHA256SUMS.txt --verify-tag --draft --prerelease --title "MindGlider $env:RELEASE_TAG (Preview)" --notes-file "docs/releases/$($env:RELEASE_TAG).md"
+          gh release create $env:RELEASE_TAG dist/*.zip dist/mindglider-sharepoint.sppkg dist/SHA256SUMS.txt --verify-tag --draft --prerelease --title "MindGlider $env:RELEASE_TAG (Preview)" --notes-file "docs/releases/$($env:RELEASE_TAG).md"
           if ($LASTEXITCODE -ne 0) { throw 'Release creation failed; check existing release before retrying.' }

@@ -8,7 +8,9 @@
 
 ## ダウンロード
 
-[GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases)から`MindGlider-0.10.0-windows-x64.zip`をダウンロードし、書き込み可能な場所へ展開して`mindglider.exe`を起動します。Java・Rustのインストールは不要です。ZIPのSHA-256は同じリリースの`SHA256SUMS.txt`で確認できます。
+[GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases)から`MindGlider-0.11.0-windows-x64.zip`をダウンロードし、書き込み可能な場所へ展開して`mindglider.exe`を起動します。ローカル編集にJava・Rust・Microsoft 365へのサインインは不要です。ZIPのSHA-256は同じリリースの`SHA256SUMS.txt`で確認できます。
+
+組織のSharePoint Onlineで共同編集を試す場合は、認証コンポーネントとSharePoint側の設定が必要です。[セットアップ手順](docs/sharepoint-preview.md)
 
 「表示 → テーマ」から10色を選択できます。候補にマウスを重ねると一時的に画面へ反映され、クリックすると保存されます。対応するソースコードは同じリリースの「Source code」から取得できます。
 

@@ -400,6 +400,17 @@ impl History {
         self.saved = self.doc.clone();
         self.dirty = false;
     }
+    pub fn saved_version(&mut self, doc: Document) {
+        self.saved = doc;
+        self.dirty = self.doc != self.saved;
+    }
+    pub fn update_remote(&mut self, doc: Document, saved: Document) {
+        self.doc = doc;
+        self.undo.clear();
+        self.redo.clear();
+        self.saved = saved;
+        self.changed();
+    }
     pub fn undo_label(&self) -> &str {
         self.undo.last().map(|x| x.0.as_str()).unwrap_or("")
     }

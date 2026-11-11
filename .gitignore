@@ -5,6 +5,14 @@
 /.vscode/
 # Build and release output: upload ZIPs to GitHub Releases, not Git
 /target/
+/sharepoint/bin/
+/sharepoint/obj/
+/sharepoint-extension/node_modules/
+/sharepoint-extension/lib/
+/sharepoint-extension/dist/
+/sharepoint-extension/temp/
+/sharepoint-extension/release/
+/sharepoint-extension/sharepoint/solution/
 /dist/
 /artifacts/
 # Maps, settings, CLI history, recovery data and backups

@@ -1,0 +1,23 @@
+{
+  "name": "mindglider-sharepoint",
+  "version": "0.11.0",
+  "private": true,
+  "engines": {"node": ">=22.14 <23"},
+  "scripts": {
+    "package": "gulp bundle --ship && gulp package-solution --ship",
+    "test": "node --experimental-strip-types --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@microsoft/sp-core-library": "1.21.1",
+    "@microsoft/sp-dialog": "1.21.1",
+    "@microsoft/sp-http": "1.21.1",
+    "@microsoft/sp-listview-extensibility": "1.21.1",
+    "tslib": "2.8.1"
+  },
+  "devDependencies": {
+    "@microsoft/rush-stack-compiler-5.3": "0.1.0",
+    "@microsoft/sp-build-web": "1.21.1",
+    "gulp": "4.0.2",
+    "typescript": "5.3.3"
+  }
+}

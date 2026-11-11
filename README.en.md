@@ -8,7 +8,9 @@ English | [日本語](README.md)
 
 ## Download
 
-Download `MindGlider-0.10.0-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases), extract it to a writable directory and run `mindglider.exe`. Neither Java nor Rust is needed to run the application. Verify the ZIP against the accompanying `SHA256SUMS.txt` if desired.
+Download `MindGlider-0.11.0-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases), extract it to a writable directory and run `mindglider.exe`. Local editing requires no Java, Rust, or Microsoft 365 sign-in. Verify the ZIP against the accompanying `SHA256SUMS.txt`.
+
+The SharePoint Online collaboration preview requires an optional authentication component and organization setup. See the [setup guide](docs/sharepoint-preview.md).
 
 Choose one of ten palettes under **View → Theme**. Hover over a theme to preview it and click to save your choice. The corresponding source is available through the **Source code** downloads on the same release page.
 

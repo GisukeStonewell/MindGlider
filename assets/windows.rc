@@ -1,7 +1,7 @@
 1 ICON "assets/icons/mindglider.ico"
 1 VERSIONINFO
-FILEVERSION 0,10,0,0
-PRODUCTVERSION 0,10,0,0
+FILEVERSION 0,11,0,0
+PRODUCTVERSION 0,11,0,0
 FILEOS 0x40004
 FILETYPE 0x1
 BEGIN
@@ -11,8 +11,8 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "MindGlider"
             VALUE "ProductName", "MindGlider"
-            VALUE "FileVersion", "0.10.0"
-            VALUE "ProductVersion", "0.10.0"
+            VALUE "FileVersion", "0.11.0"
+            VALUE "ProductVersion", "0.11.0"
             VALUE "OriginalFilename", "mindglider.exe"
         END
     END

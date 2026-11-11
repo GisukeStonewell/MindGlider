@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <CustomAction
+    Title="MindGlider"
+    RegistrationId="101"
+    RegistrationType="List"
+    Location="ClientSideExtension.ListViewCommandSet.ContextMenu"
+    ClientSideComponentId="3a0dbb93-44d4-46e0-88ea-b4c7eed58226" />
+</Elements>

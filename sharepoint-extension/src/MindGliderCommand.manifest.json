@@ -1,0 +1,16 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/command-set-extension-manifest.schema.json",
+  "id": "3a0dbb93-44d4-46e0-88ea-b4c7eed58226",
+  "alias": "MindGliderCommand",
+  "componentType": "Extension",
+  "extensionType": "ListViewCommandSet",
+  "version": "*",
+  "manifestVersion": 2,
+  "requiresCustomScript": false,
+  "items": {
+    "OPEN_MINDGLIDER": {
+      "title": {"default": "Open in MindGlider", "ja-jp": "MindGliderで開く"},
+      "type": "command"
+    }
+  }
+}

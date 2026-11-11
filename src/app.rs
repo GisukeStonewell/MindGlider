@@ -1,3 +1,4 @@
+use crate::sharepoint::{self, Job, Location, Reply, Session};
 use crate::theme::{self, Theme};
 use crate::ui_helpers::*;
 use anyhow::{Context, Result, ensure};
@@ -27,6 +28,7 @@ struct DragState {
 }
 struct Tab {
     id: String,
+    sharepoint: Option<Session>,
     history: History,
     path: Option<PathBuf>,
     disk: Option<(SystemTime, u64)>,
@@ -47,6 +49,7 @@ impl Tab {
         let disk = path.as_deref().and_then(stamp);
         Self {
             id: uuid::Uuid::new_v4().simple().to_string(),
+            sharepoint: None,
             history: History::new(doc),
             path,
             disk,
@@ -63,11 +66,16 @@ impl Tab {
         }
     }
     fn name(&self) -> String {
-        self.path
+        let name = self
+            .path
             .as_ref()
             .and_then(|p| p.file_name())
             .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or_else(|| self.history.doc.nodes[&self.history.doc.root].text.text())
+            .unwrap_or_else(|| self.history.doc.nodes[&self.history.doc.root].text.text());
+        if self.sharepoint.is_some() {
+            return format!("{name} · SharePoint");
+        }
+        name
     }
     fn select(&mut self, id: String) {
         self.selection = BTreeSet::from([id.clone()]);
@@ -102,6 +110,7 @@ struct Settings {
     #[serde(default)]
     version: u32,
     language: String,
+    sharepoint_enabled: bool,
     cli: CliSettings,
     shortcuts: BTreeMap<String, String>,
     tabs: Vec<SavedTab>,
@@ -122,6 +131,7 @@ impl Default for Settings {
         Self {
             version: 2,
             language: "ja".into(),
+            sharepoint_enabled: true,
             cli: CliSettings::default(),
             shortcuts: commands()
                 .iter()
@@ -142,6 +152,9 @@ fn commands() -> Vec<(&'static str, &'static str, &'static str)> {
     vec![
         ("new", tr("app.169"), "Ctrl+N"),
         ("open", tr("app.212"), "Ctrl+O"),
+        ("open_sharepoint", tr("sharepoint.open"), ""),
+        ("sharepoint_autosave", tr("sharepoint.autosave"), ""),
+        ("sharepoint_reload", tr("sharepoint.reload"), ""),
         ("save", tr("app.211"), "Ctrl+S"),
         ("save_as", tr("app.210"), "Ctrl+Shift+S"),
         ("close", tr("app.170"), "Ctrl+W"),
@@ -251,6 +264,13 @@ pub struct MindGlider {
     )>,
     closing: Option<Closing>,
     last_autosave: Instant,
+    sharepoint_uri: Option<String>,
+    sharepoint_launch: bool,
+    sharepoint_dialog: bool,
+    sharepoint_link: String,
+    sharepoint_window: isize,
+    sharepoint_open: Option<(Location, Job)>,
+    sharepoint_reload_tab: Option<String>,
     export_format: String,
     export_branch: bool,
     preview: Option<egui::TextureHandle>,
@@ -315,7 +335,11 @@ impl MindGlider {
             .position(|a| a == "--smoke")
             .and_then(|i| args.get(i + 1))
             .map(PathBuf::from);
-        if smoke.is_none() {
+        let sharepoint_uri = args
+            .get(1)
+            .filter(|s| s.starts_with("mindglider:"))
+            .cloned();
+        if smoke.is_none() && sharepoint_uri.is_none() {
             for saved in &settings.tabs {
                 if !saved.id.chars().all(|c| c.is_ascii_alphanumeric()) {
                     continue;
@@ -354,10 +378,11 @@ impl MindGlider {
                 }
             }
         }
-        let file = args
-            .iter()
-            .skip(1)
-            .find(|a| !a.starts_with('-') && a.to_lowercase().ends_with(".mm"));
+        let file = args.iter().skip(1).find(|a| {
+            !a.starts_with('-')
+                && !a.starts_with("mindglider:")
+                && a.to_lowercase().ends_with(".mm")
+        });
         if let Some(file) = file {
             let p = PathBuf::from(file);
             match std::fs::read(&p)
@@ -426,6 +451,26 @@ impl MindGlider {
             catalog_task: None,
             closing: None,
             last_autosave: Instant::now(),
+            sharepoint_launch: sharepoint_uri.is_some(),
+            sharepoint_uri,
+            sharepoint_dialog: false,
+            sharepoint_link: String::new(),
+            sharepoint_window: {
+                #[cfg(windows)]
+                {
+                    use raw_window_handle::{HasWindowHandle, RawWindowHandle};
+                    match cc.window_handle().map(|h| h.as_raw()) {
+                        Ok(RawWindowHandle::Win32(handle)) => handle.hwnd.get(),
+                        _ => 0,
+                    }
+                }
+                #[cfg(not(windows))]
+                {
+                    0
+                }
+            },
+            sharepoint_open: None,
+            sharepoint_reload_tab: None,
             export_format: "png".into(),
             export_branch: false,
             preview: None,
@@ -517,6 +562,13 @@ impl MindGlider {
         Ok(())
     }
     fn save_tab(&mut self, index: usize, save_as: bool) -> Result<bool> {
+        ensure!(
+            !self.tabs[index].sharepoint.as_ref().is_some_and(|session| {
+                session.job.as_ref().is_some_and(|job| job.sent.is_some())
+            }),
+            "{}",
+            tr("sharepoint.saving")
+        );
         let old_path = self.tabs[index].path.clone();
         let path = if save_as || old_path.is_none() {
             rfd::FileDialog::new()
@@ -543,7 +595,7 @@ impl MindGlider {
         let tab = &mut self.tabs[index];
         // Relative image paths refer to the map location, including after Save As.
         let mut doc = tab.history.doc.clone();
-        if old_path.as_ref().and_then(|p| p.parent()) != path.parent() {
+        if tab.sharepoint.is_none() && old_path.as_ref().and_then(|p| p.parent()) != path.parent() {
             for n in doc.nodes.values_mut() {
                 if let Some(p) = &mut n.image {
                     let resolved = storage::resolve(old_path.as_deref(), &p.uri);
@@ -563,6 +615,9 @@ impl MindGlider {
         }
         storage::save(&path, &doc)?;
         tab.history.doc = doc;
+        if tab.sharepoint.take().is_some() {
+            tab.history = History::new(tab.history.doc.clone());
+        }
         tab.path = Some(path.clone());
         tab.disk = stamp(&path);
         tab.history.saved();
@@ -572,11 +627,21 @@ impl MindGlider {
         Ok(true)
     }
     fn save_session(&mut self) -> Result<()> {
-        if self.smoke.is_some() {
+        for tab in &mut self.tabs {
+            Self::recover_sharepoint(&self.data, tab)?;
+        }
+        if self.smoke.is_some() || self.sharepoint_launch {
             return Ok(());
         }
         let mut saved = vec![];
-        for t in &self.tabs {
+        let mut active = 0;
+        for (index, t) in self.tabs.iter().enumerate() {
+            if t.sharepoint.is_some() {
+                continue;
+            }
+            if index <= self.active {
+                active = saved.len();
+            }
             let recovery = t.history.dirty || t.path.is_none();
             if recovery {
                 storage::atomic_write(
@@ -593,7 +658,7 @@ impl MindGlider {
             });
         }
         self.settings.tabs = saved;
-        self.settings.active = self.active;
+        self.settings.active = active;
         storage::atomic_write(
             &self.data.join("settings.json"),
             &serde_json::to_vec_pretty(&self.settings)?,
@@ -618,8 +683,39 @@ impl MindGlider {
                     self.open(p)?;
                 }
             }
+            "open_sharepoint" => {
+                ensure!(
+                    self.settings.sharepoint_enabled,
+                    "{}",
+                    tr("sharepoint.disabled")
+                );
+                self.sharepoint_dialog = true;
+            }
             "save" => {
-                self.save_tab(self.active, false)?;
+                if self.tabs[self.active].sharepoint.is_some() {
+                    self.sync_sharepoint(self.active, true, true, ctx)?;
+                } else {
+                    self.save_tab(self.active, false)?;
+                }
+            }
+            "sharepoint_autosave" => {
+                let session = self.tabs[self.active]
+                    .sharepoint
+                    .as_mut()
+                    .context(tr("sharepoint.open"))?;
+                session.autosave = !session.autosave;
+                session.due = Instant::now();
+                self.status = tr(if session.autosave {
+                    "sharepoint.autosave_on"
+                } else {
+                    "sharepoint.autosave_off"
+                })
+                .into();
+            }
+            "sharepoint_reload" => {
+                let tab = &self.tabs[self.active];
+                ensure!(tab.sharepoint.is_some(), "{}", tr("sharepoint.open"));
+                self.sharepoint_reload_tab = Some(tab.id.clone());
             }
             "save_as" => {
                 self.save_tab(self.active, true)?;
@@ -2044,6 +2140,11 @@ impl MindGlider {
             webbrowser::open(&link)?;
         } else {
             ensure!(
+                self.tabs[self.active].sharepoint.is_none(),
+                "{}",
+                tr("sharepoint.references")
+            );
+            ensure!(
                 !link.contains("://") && !link.to_lowercase().starts_with("javascript:"),
                 "{}",
                 msg("app.041", &[])
@@ -2246,6 +2347,7 @@ impl MindGlider {
                         zoom,
                         border,
                         t.path.as_deref(),
+                        t.sharepoint.is_none(),
                         !inline.as_ref().is_some_and(|e| e.id == p.id),
                     );
                     let response = ui.interact(r, ui.id().with(&p.id), Sense::click_and_drag());
@@ -2457,6 +2559,7 @@ impl MindGlider {
                                                 zoom,
                                                 Stroke::new(1.0_f32, color(&p.style.edge_color)),
                                                 t.path.as_deref(),
+                                                t.sharepoint.is_none(),
                                                 true,
                                             );
                                         }
@@ -2816,7 +2919,281 @@ impl MindGlider {
             self.icon_picker = Some(picker);
         }
     }
+    fn open_sharepoint(&mut self, uri: &str, ctx: &egui::Context) -> Result<()> {
+        ensure!(
+            self.settings.sharepoint_enabled,
+            "{}",
+            tr("sharepoint.disabled")
+        );
+        ensure!(self.sharepoint_window != 0, "{}", tr("sharepoint.helper"));
+        ensure!(
+            self.sharepoint_open.is_none(),
+            "{}",
+            tr("sharepoint.loading")
+        );
+        let location = Location::parse(uri.trim())?;
+        if let Some(index) = self.tabs.iter().position(|tab| {
+            tab.sharepoint
+                .as_ref()
+                .is_some_and(|session| session.location == location)
+        }) {
+            self.finish_inline(true)?;
+            self.active = index;
+            return Ok(());
+        }
+        let job = sharepoint::request(
+            location.clone(),
+            self.sharepoint_window,
+            ctx.clone(),
+            None,
+            None,
+            true,
+        )?;
+        self.sharepoint_open = Some((location, job));
+        self.status = tr("sharepoint.loading").into();
+        Ok(())
+    }
+
+    fn recover_sharepoint(data: &Path, tab: &mut Tab) -> Result<()> {
+        let Some(session) = tab.sharepoint.as_mut() else {
+            return Ok(());
+        };
+        let path = data.join(format!("recovery-{}.mm", tab.id));
+        if tab.history.dirty {
+            if session.recovery_revision != Some(tab.history.revision) {
+                storage::atomic_write(&path, &mm::write(&tab.history.doc)?)?;
+                session.recovery_revision = Some(tab.history.revision);
+            }
+        } else if session.recovery_revision.is_some() {
+            match std::fs::remove_file(&path) {
+                Ok(()) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+                Err(e) => return Err(e.into()),
+            }
+            session.recovery_revision = None;
+        }
+        Ok(())
+    }
+
+    fn sync_sharepoint(
+        &mut self,
+        index: usize,
+        manual: bool,
+        interactive: bool,
+        ctx: &egui::Context,
+    ) -> Result<()> {
+        let tab = &mut self.tabs[index];
+        Self::recover_sharepoint(&self.data, tab)?;
+        let session = tab.sharepoint.as_mut().unwrap();
+        if manual {
+            session.manual_pending = true;
+        }
+        if session.job.is_some() {
+            return Ok(());
+        }
+        ensure!(
+            self.settings.sharepoint_enabled,
+            "{}",
+            tr("sharepoint.disabled")
+        );
+        ensure!(session.conflict.is_none(), "{}", tr("sharepoint.conflict"));
+        let saving = (manual
+            || (!session.check_first && (session.autosave || session.manual_pending)))
+            && tab.history.dirty;
+        let sent = saving.then(|| tab.history.doc.clone());
+        session.due = Instant::now() + Duration::from_secs(15);
+        session.job = Some(sharepoint::request(
+            session.location.clone(),
+            self.sharepoint_window,
+            ctx.clone(),
+            Some(&session.base),
+            sent,
+            interactive,
+        )?);
+        if saving {
+            self.status = tr("sharepoint.saving").into();
+        }
+        Ok(())
+    }
+
+    fn poll_sharepoint(&mut self, ctx: &egui::Context) {
+        if let Some(result) = self
+            .sharepoint_open
+            .as_ref()
+            .and_then(|(_, job)| job.result())
+        {
+            let (location, _) = self.sharepoint_open.take().unwrap();
+            if self.settings.sharepoint_enabled {
+                let result = result.and_then(|reply| {
+                    let Reply::Loaded(base) = reply else {
+                        anyhow::bail!("{}", tr("sharepoint.retry"));
+                    };
+                    self.finish_inline(true)?;
+                    let mut tab = Tab::new(base.doc.clone(), None);
+                    tab.sharepoint = Some(Session {
+                        location,
+                        base: *base,
+                        due: Instant::now() + Duration::from_secs(4),
+                        job: None,
+                        autosave: true,
+                        manual_pending: false,
+                        check_first: false,
+                        conflict: None,
+                        recovery_revision: None,
+                    });
+                    self.tabs.push(tab);
+                    self.active = self.tabs.len() - 1;
+                    self.filter_active = false;
+                    self.status = tr("sharepoint.autosave_on").into();
+                    Ok(())
+                });
+                self.result(result);
+            }
+        }
+        for index in 0..self.tabs.len() {
+            let inline = self
+                .inline
+                .as_ref()
+                .is_some_and(|e| e.tab_id == self.tabs[index].id);
+            let Some(session) = self.tabs[index].sharepoint.as_ref() else {
+                continue;
+            };
+            // Keep a received revision queued while text is being entered on the same tab.
+            if !inline && let Some(result) = session.job.as_ref().and_then(Job::result) {
+                let result = self.finish_sharepoint_sync(index, result);
+                self.result(result);
+            }
+            let session = self.tabs[index].sharepoint.as_ref().unwrap();
+            if self.settings.sharepoint_enabled
+                && session.job.is_none()
+                && session.conflict.is_none()
+                && session.due <= Instant::now()
+                && !inline
+            {
+                let result = self.sync_sharepoint(index, false, false, ctx);
+                self.result(result);
+            }
+            ctx.request_repaint_after(Duration::from_millis(500));
+        }
+    }
+
+    fn finish_sharepoint_sync(&mut self, index: usize, result: Result<Reply>) -> Result<()> {
+        let tab = &mut self.tabs[index];
+        let session = tab.sharepoint.as_mut().unwrap();
+        let job = session.job.take().unwrap();
+        session.due = Instant::now() + Duration::from_secs(if result.is_ok() { 4 } else { 15 });
+        match result {
+            Err(e) => {
+                session.check_first = true;
+                return Err(e);
+            }
+            Ok(Reply::Unchanged) => session.check_first = false,
+            Ok(Reply::Conflict) => {
+                session.check_first = true;
+                session.due = Instant::now() + Duration::from_secs(1);
+            }
+            Ok(Reply::WriteDenied) => {
+                session.autosave = false;
+                session.manual_pending = false;
+                self.status = tr("sharepoint.write_denied").into();
+            }
+            Ok(Reply::Saved(tag)) => {
+                let doc = job.sent.context(tr("sharepoint.connection_error"))?;
+                tab.history.saved_version(doc.clone());
+                session.manual_pending &= tab.history.dirty;
+                session.base.tag = tag;
+                session.base.doc = doc;
+                session.check_first = false;
+                self.status = tr("sharepoint.saved").into();
+            }
+            Ok(Reply::Loaded(remote)) => {
+                let merged = if tab.history.dirty {
+                    crate::sharepoint_merge::merge(&session.base.doc, &tab.history.doc, &remote.doc)
+                } else {
+                    Ok(remote.doc.clone())
+                };
+                match merged {
+                    Ok(doc) => {
+                        tab.history.update_remote(doc, remote.doc.clone());
+                        session.base = *remote;
+                        session.check_first = false;
+                        self.status = tr("sharepoint.updated").into();
+                        tab.normalize_selection();
+                    }
+                    Err(_) => {
+                        session.conflict = Some(*remote);
+                        self.status = tr("sharepoint.conflict").into();
+                    }
+                }
+            }
+        }
+        Self::recover_sharepoint(&self.data, tab)
+    }
     fn dialogs(&mut self, ctx: &egui::Context) {
+        if let Some(id) = self.sharepoint_reload_tab.clone() {
+            let mut open = true;
+            let mut reload = false;
+            crate::theme::window(ctx, tr("sharepoint.reload"), "sharepoint.reload").show(
+                ctx,
+                |ui| {
+                    crate::theme::dialog_header(ui, tr("sharepoint.reload"), &mut open);
+                    ui.label(tr("sharepoint.reload_confirm"));
+                    reload = ui.button(tr("sharepoint.reload")).clicked();
+                },
+            );
+            if reload {
+                let result = (|| {
+                    ensure!(
+                        self.settings.sharepoint_enabled,
+                        "{}",
+                        tr("sharepoint.disabled")
+                    );
+                    let index = self
+                        .tabs
+                        .iter()
+                        .position(|tab| tab.id == id)
+                        .context(tr("sharepoint.open"))?;
+                    let tab = &mut self.tabs[index];
+                    let session = tab.sharepoint.as_mut().context(tr("sharepoint.open"))?;
+                    ensure!(session.job.is_none(), "{}", tr("sharepoint.saving"));
+                    if let Some(remote) = session.conflict.take() {
+                        session.base = remote;
+                    }
+                    session.manual_pending = false;
+                    tab.history
+                        .update_remote(session.base.doc.clone(), session.base.doc.clone());
+                    session.check_first = true;
+                    tab.normalize_selection();
+                    self.sync_sharepoint(index, false, true, ctx)
+                })();
+                self.result(result);
+                open = false;
+            }
+            if !open {
+                self.sharepoint_reload_tab = None;
+            }
+        }
+        if self.sharepoint_dialog {
+            let mut open = true;
+            let mut connect = false;
+            crate::theme::window(ctx, tr("sharepoint.open"), "sharepoint.open")
+                .default_width(500.)
+                .show(ctx, |ui| {
+                    crate::theme::dialog_header(ui, tr("sharepoint.open"), &mut open);
+                    ui.label(tr("sharepoint.link"));
+                    ui.text_edit_singleline(&mut self.sharepoint_link);
+                    connect = ui.button(tr("app.212")).clicked();
+                });
+            if connect {
+                let result = self.open_sharepoint(&self.sharepoint_link.clone(), ctx);
+                if result.is_ok() {
+                    self.sharepoint_link.clear();
+                    open = false;
+                }
+                self.result(result);
+            }
+            self.sharepoint_dialog = open;
+        }
         self.icon_dialog(ctx);
         if self.find_open {
             let mut open = true;
@@ -3311,6 +3688,10 @@ impl MindGlider {
                                             }
                                         });
                                         ui.label(tr("app.097"));
+                                        ui.checkbox(
+                                            &mut self.settings.sharepoint_enabled,
+                                            tr("sharepoint.enabled"),
+                                        );
                                     }
                                     1 => {
                                         ui.heading(tr("ui.cli_heading"));
@@ -3885,6 +4266,11 @@ impl MindGlider {
         if !self.export_open {
             return;
         }
+        if self.tabs[self.active].sharepoint.is_some() {
+            self.export_open = false;
+            self.status = tr("sharepoint.export_copy").into();
+            return;
+        }
         let mut open = true;
         let mut save = false;
         let mut preview = false;
@@ -4054,6 +4440,16 @@ impl MindGlider {
             Closing::Tab(i) => vec![i],
             Closing::Quit => (0..self.tabs.len()).collect(),
         };
+        if indices.iter().any(|index| {
+            self.tabs[*index]
+                .sharepoint
+                .as_ref()
+                .is_some_and(|session| session.job.as_ref().is_some_and(|job| job.sent.is_some()))
+        }) {
+            self.status = tr("sharepoint.saving").into();
+            self.closing = None;
+            return;
+        }
         let dirty: Vec<_> = indices
             .iter()
             .copied()
@@ -4138,10 +4534,12 @@ impl MindGlider {
                             pan: [t.pan.x, t.pan.y],
                         })
                         .collect();
-                    let _ = storage::atomic_write(
-                        &self.data.join("settings.json"),
-                        &serde_json::to_vec_pretty(&self.settings).unwrap_or_default(),
-                    );
+                    if !self.sharepoint_launch {
+                        let _ = storage::atomic_write(
+                            &self.data.join("settings.json"),
+                            &serde_json::to_vec_pretty(&self.settings).unwrap_or_default(),
+                        );
+                    }
                     self.allow_exit = true;
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
                 }
@@ -4228,6 +4626,11 @@ impl eframe::App for MindGlider {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        if let Some(uri) = self.sharepoint_uri.take() {
+            let result = self.open_sharepoint(&uri, ctx);
+            self.result(result);
+        }
+        self.poll_sharepoint(ctx);
         self.frame_count += 1;
         if self.first_frame
             && let Some(scale) = self.requested_scale
@@ -4413,7 +4816,17 @@ fn open_file(path: &Path) -> Result<()> {
 
 fn menu_commands(index: usize) -> &'static [&'static str] {
     match index {
-        0 => &["new", "open", "save", "save_as", "export", "close"],
+        0 => &[
+            "new",
+            "open",
+            "open_sharepoint",
+            "sharepoint_autosave",
+            "sharepoint_reload",
+            "save",
+            "save_as",
+            "export",
+            "close",
+        ],
         1 => &[
             "undo", "redo", "copy", "cut", "paste", "edit", "icons", "child", "sibling", "parent",
             "delete", "side",
@@ -4578,6 +4991,14 @@ mod panel_preference_tests {
         assert!(restored.icon_panel_open);
         assert!(!restored.inspector_open);
     }
+
+    #[test]
+    fn sharepoint_is_available_by_default_and_can_be_disabled() {
+        let settings: Settings = serde_json::from_str("{}").unwrap();
+        assert!(settings.sharepoint_enabled);
+        let settings: Settings = serde_json::from_str(r#"{"sharepoint_enabled":false}"#).unwrap();
+        assert!(!settings.sharepoint_enabled);
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -4589,6 +5010,7 @@ fn draw_map_node(
     zoom: f32,
     border: Stroke,
     base: Option<&Path>,
+    load_images: bool,
     show_text: bool,
 ) {
     let ctx = ui.ctx().clone();
@@ -4628,7 +5050,7 @@ fn draw_map_node(
             color(&p.style.color),
         );
     }
-    if let Some(img) = &n.image {
+    if load_images && let Some(img) = &n.image {
         let path = storage::resolve(base, &img.uri);
         let path = std::path::absolute(&path).unwrap_or(path);
         // egui_extras' file loader expects a literal filesystem path after file://.
