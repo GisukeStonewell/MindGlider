@@ -1,8 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use mindglider::i18n::msg;
 mod app;
-mod sharepoint;
-mod sharepoint_merge;
 mod theme;
 mod ui_helpers;
 #[cfg(windows)]
@@ -29,13 +27,7 @@ fn main() {
     }
 }
 fn run() -> anyhow::Result<()> {
-    let mut args: Vec<String> = std::env::args().collect();
-    if args
-        .get(1)
-        .is_some_and(|arg| arg.starts_with("mindglider:"))
-    {
-        args.truncate(2);
-    }
+    let args: Vec<String> = std::env::args().collect();
     if args.get(1).is_some_and(|a| a == "--roundtrip") {
         let doc = mindglider::mm::read(&std::fs::read(&args[2])?)?;
         mindglider::storage::atomic_write(
