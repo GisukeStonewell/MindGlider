@@ -1,5 +1,11 @@
 # Changelog / 変更履歴
 
+## 0.11.0 — AI editing and diagnostics / AI編集・診断
+
+F12のタイトル変更モード、ツリー再構成の差分確認と一括適用、CLIの診断ログ、起動中の更新通知と再起動を追加しました。ノード追加・移動・削除のキー操作、日本語IME、設定保存時の動作を改善しました。[日英リリースノート](docs/releases/v0.11.0.md)
+
+Adds title-only AI editing, tree restructuring with diff review and batch application, CLI diagnostics, and restart notifications after executable updates. Improves node keyboard controls, Japanese IME handling, and saving settings. [Bilingual release notes](docs/releases/v0.11.0.md)
+
 ## 0.10.0 — Sand themes / Sandテーマ
 
 Sandを基調とした新しい画面、表示メニューの配色プレビュー、アプリ配布ZIPの構成変更。詳細は[日英リリースノート](docs/releases/v0.10.0.md)をご覧ください。

@@ -37,6 +37,7 @@ Windows system fonts are loaded from the user's Windows installation and are not
 | byteorder-lite | 0.1.0 | Unlicense OR MIT | LICENSE-MIT |
 | cfg-if | 1.0.5 | MIT OR Apache-2.0 | LICENSE-APACHE, LICENSE-MIT |
 | cfg_aliases | 0.2.2 | MIT | LICENSE, NOTICES.md |
+| chrono | 0.4.45 | MIT OR Apache-2.0 | LICENSE.txt |
 | clipboard-win | 5.4.3 | BSL-1.0 | Declared in Cargo manifest |
 | codespan-reporting | 0.11.1 | Apache-2.0 | Declared in Cargo manifest |
 | color_quant | 1.1.0 | MIT | LICENSE |
@@ -66,6 +67,7 @@ Windows system fonts are loaded from the user's Windows installation and are not
 | fax | 0.2.7 | MIT | LICENSE |
 | fdeflate | 0.3.7 | MIT OR Apache-2.0 | LICENSE-APACHE, LICENSE-MIT |
 | flate2 | 1.1.10 | MIT OR Apache-2.0 | LICENSE-APACHE, LICENSE-MIT |
+| flexi_logger | 0.31.10 | MIT OR Apache-2.0 | LICENSE-APACHE, LICENSE-MIT |
 | float-cmp | 0.9.0 | MIT | LICENSE |
 | foldhash | 0.1.5 | Zlib | LICENSE |
 | font-types | 0.11.3 | MIT OR Apache-2.0 | LICENSE-APACHE, LICENSE-MIT |

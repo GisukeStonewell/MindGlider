@@ -32,6 +32,8 @@
 
 検出できなければ`codex.exe`／`claude.exe`を既定にする。設定画面でパスを変更でき、既定値に戻すと再検出する。
 
+Windowsで保存済みの指定が`codex.exe`の場合は、CLI起動時に上記の順で探し、続いて`PATH`と`%APPDATA%\npm`からnpm版の実行ファイルを探す。モデル候補取得とAI編集の両方でこの検出を使う。
+
 ## モデルとeffortの候補
 
 - Codex：`CODEX_HOME`（未指定は`~/.codex`）の`config.toml`と`models_cache.json`を読む。次に起動したapp-serverへinitialize／initialized／model/listを送り、ページを最後まで取得する。

@@ -31,19 +31,23 @@ pub fn target(doc: &Document, scene: &Scene, current: &str, key: Key) -> Option<
     } else {
         return None;
     };
+    let depth = doc.depth(current);
     scene
         .nodes
         .iter()
         .filter(|p| p.id != current && (p.rect.center().y - placed.rect.center().y) * sign > 0.5)
         .filter(|p| current == doc.root || p.id == doc.root || doc.nodes[&p.id].left == node.left)
-        .min_by(|a, b| {
-            let score = |p: &crate::layout::Placed| {
-                let d = p.rect.center() - placed.rect.center();
-                d.y * d.y + d.x * d.x * 0.25
-            };
-            score(a).total_cmp(&score(b)).then(a.id.cmp(&b.id))
+        .map(|p| (p, doc.depth(&p.id) != depth))
+        .min_by(|(a, a_other_depth), (b, b_other_depth)| {
+            let a_offset = a.rect.center() - placed.rect.center();
+            let b_offset = b.rect.center() - placed.rect.center();
+            a_other_depth
+                .cmp(b_other_depth)
+                .then_with(|| a_offset.y.abs().total_cmp(&b_offset.y.abs()))
+                .then_with(|| a_offset.x.abs().total_cmp(&b_offset.x.abs()))
+                .then_with(|| a.id.cmp(&b.id))
         })
-        .map(|p| p.id.clone())
+        .map(|(p, _)| p.id.clone())
 }
 /// Positive viewport scrolling moves the canvas in the opposite direction.
 pub fn scroll_delta(key: Key, seconds: f32) -> Vec2 {
@@ -62,12 +66,13 @@ mod tests {
     use crate::{layout::LayoutCache, model::Document};
     use eframe::egui::{Pos2, Rect, vec2};
     #[test]
-    fn vertical_navigation_can_cross_levels_and_ignores_hidden_nodes() {
+    fn vertical_navigation_prefers_same_depth_then_nearest_y_on_the_same_side() {
         let mut d = Document::default();
         let root = d.root.clone();
         let a = d.add(&root, "upper parent").unwrap();
         let deep = d.add(&a, "deep leaf").unwrap();
         let b = d.add(&root, "lower ancestor sibling").unwrap();
+        let peer = d.add(&b, "peer in another branch").unwrap();
         let mut scene = LayoutCache::default().build(&d, None, |_, _| vec2(50., 20.));
         for p in &mut scene.nodes {
             let xy = if p.id == deep {
@@ -75,16 +80,23 @@ mod tests {
             } else if p.id == a {
                 (100., -30.)
             } else if p.id == b {
-                (100., 35.)
+                (100., 12.)
+            } else if p.id == peer {
+                (220., 70.)
             } else {
-                (0., -30.)
+                (219., 15.)
             };
             p.rect = Rect::from_center_size(Pos2::new(xy.0, xy.1), vec2(50., 20.));
         }
+        assert_eq!(
+            target(&d, &scene, &deep, Key::ArrowDown),
+            Some(peer.clone())
+        );
+        assert_eq!(target(&d, &scene, &peer, Key::ArrowUp), Some(deep.clone()));
+        scene.nodes.retain(|p| p.id != peer);
         assert_eq!(target(&d, &scene, &deep, Key::ArrowDown), Some(b.clone()));
-        assert_eq!(target(&d, &scene, &b, Key::ArrowDown), None);
         scene.nodes.retain(|p| p.id != b);
-        assert_eq!(target(&d, &scene, &deep, Key::ArrowDown), None);
+        assert_eq!(target(&d, &scene, &deep, Key::ArrowDown), Some(root));
     }
     #[test]
     fn horizontal_navigation_follows_the_visual_side() {

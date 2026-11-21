@@ -30,6 +30,7 @@ try {
         New-Item -ItemType Directory -Force $bundleDir | Out-Null
         $publicFiles = @('README.md','README.en.md','FEATURES.md','LICENSE.txt','NOTICE.md','THIRD_PARTY.md','CONTRIBUTING.md','SECURITY.md','CHANGELOG.md')
         Copy-Item -LiteralPath 'target/release/mindglider.exe' -Destination $bundleDir
+        Copy-Item -LiteralPath 'scripts/update.ps1' -Destination $bundleDir
         Copy-Item -LiteralPath $publicFiles -Destination $bundleDir
         foreach ($folder in @('docs','locales','licenses','assets')) {
             Copy-Item -LiteralPath $folder -Destination $bundleDir -Recurse

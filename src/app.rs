@@ -1,5 +1,6 @@
 use crate::theme::{self, Theme};
 use crate::ui_helpers::*;
+use crate::update;
 use anyhow::{Context, Result, ensure};
 use eframe::egui::{self, Align2, Color32, FontId, Pos2, Rect, Sense, Stroke, StrokeKind, Vec2};
 use mindglider::i18n::{msg, tr};
@@ -82,6 +83,36 @@ impl Tab {
         if self.selection.is_empty() {
             self.selection.insert(self.primary.clone());
         }
+    }
+    fn delete_selection(&mut self) -> Result<()> {
+        let doc = &self.history.doc;
+        let ids = doc.top_selected(&self.selection);
+        let anchor = std::iter::successors(Some(self.primary.as_str()), |id| {
+            doc.nodes.get(*id)?.parent.as_deref()
+        })
+        .find(|id| ids.iter().any(|selected| selected == id));
+        let next = anchor.and_then(|id| {
+            let parent = doc.nodes[id].parent.as_ref()?;
+            let siblings = &doc.nodes[parent].children;
+            let index = siblings.iter().position(|sibling| sibling == id)?;
+            siblings[index + 1..]
+                .iter()
+                .chain(siblings[..index].iter().rev())
+                .find(|sibling| !self.selection.contains(*sibling))
+                .or(Some(parent))
+                .cloned()
+        });
+        self.history.edit(tr("app.183"), |doc| {
+            for id in ids {
+                doc.delete(&id)?;
+            }
+            Ok(())
+        })?;
+        if let Some(next) = next {
+            self.select(next);
+            self.ensure_visible = true;
+        }
+        Ok(())
     }
 }
 fn stamp(path: &Path) -> Option<(SystemTime, u64)> {
@@ -184,12 +215,25 @@ struct StyleDraft {
     styles: BTreeMap<String, Style>,
     rules: Vec<Rule>,
 }
+#[derive(Clone)]
 struct InlineEdit {
     tab_id: String,
     id: String,
     text: mindglider::richtext::RichText,
     original: mindglider::richtext::RichText,
     focus: bool,
+}
+struct PendingTreeReview {
+    tab_id: String,
+    snapshot: ai::Snapshot,
+    plan: ai::EditPlan,
+    request_id: String,
+    started: Instant,
+    review: ai::TreeReview,
+    add_choices: BTreeSet<usize>,
+    selected: usize,
+    error: Option<String>,
+    apply_failed: bool,
 }
 #[derive(Default)]
 struct MenuState {
@@ -239,7 +283,9 @@ pub struct MindGlider {
     filter_active: bool,
     palette: String,
     ai_prompt: String,
+    ai_title_only: bool,
     ai_task: Option<ai::Task>,
+    ai_review: Option<PendingTreeReview>,
     ai_history: Vec<String>,
     ai_was_open: bool,
     ai_focus: bool,
@@ -261,6 +307,7 @@ pub struct MindGlider {
     started: Instant,
     first_frame: bool,
     allow_exit: bool,
+    updates: Option<(update::Watch, std::sync::mpsc::Sender<update::Restart>)>,
     smoke: Option<PathBuf>,
     smoke_drag_mode: Option<String>,
     smoke_drag_source: Option<String>,
@@ -417,7 +464,9 @@ impl MindGlider {
             filter_active: false,
             palette: String::new(),
             ai_prompt: String::new(),
+            ai_title_only: false,
             ai_task: None,
+            ai_review: None,
             ai_history: Vec::new(),
             ai_was_open: false,
             ai_focus: false,
@@ -436,6 +485,7 @@ impl MindGlider {
             started,
             first_frame: true,
             allow_exit: false,
+            updates: None,
             smoke,
             smoke_drag_mode: args
                 .iter()
@@ -474,6 +524,7 @@ impl MindGlider {
                     app.settings_page = 3;
                 }
                 "ai" => app.ai_open = true,
+                "ai-review" if app.smoke.is_some() => app.smoke_ai_review(),
                 "icons" => app.open_icon_picker(),
                 "panels" => {
                     app.settings.icon_panel_open = true;
@@ -600,6 +651,68 @@ impl MindGlider {
         )?;
         Ok(())
     }
+    pub fn watch_updates(
+        &mut self,
+        watch: update::Watch,
+        restart: std::sync::mpsc::Sender<update::Restart>,
+    ) {
+        self.updates = Some((watch, restart));
+    }
+
+    fn update_notice(&mut self, ctx: &egui::Context) {
+        let Some((watch, _)) = self.updates.as_mut() else {
+            return;
+        };
+        watch.poll(ctx);
+        if !watch.available() {
+            return;
+        }
+        let mut restart = false;
+        let mut later = false;
+        egui::TopBottomPanel::top("update-notice").show(ctx, |ui| {
+            ui.horizontal_wrapped(|ui| {
+                ui.label(tr("update.available"));
+                restart = ui
+                    .add_enabled(
+                        self.ai_task.is_none()
+                            && self.ai_review.is_none()
+                            && self.closing.is_none(),
+                        egui::Button::new(tr("update.restart")),
+                    )
+                    .on_disabled_hover_text(tr("update.wait"))
+                    .clicked();
+                later = ui.button(tr("update.later")).clicked();
+            });
+        });
+        if later {
+            watch.defer();
+        } else if restart {
+            let result = self.restart_for_update(ctx);
+            self.result(result);
+        }
+    }
+
+    fn restart_for_update(&mut self, ctx: &egui::Context) -> Result<()> {
+        let (watch, sender) = self
+            .updates
+            .as_mut()
+            .context(tr("update.file_unavailable"))?;
+        let restart = watch.approve()?;
+        let sender = sender.clone();
+        let draft = self.inline.clone();
+        if let Err(error) = self.finish_inline(true) {
+            self.inline = draft.map(|mut edit| {
+                edit.focus = true;
+                edit
+            });
+            return Err(error);
+        }
+        self.save_session().context(tr("update.save_failed"))?;
+        sender.send(restart).context(tr("update.restart_failed"))?;
+        self.allow_exit = true;
+        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        Ok(())
+    }
     fn action(&mut self, id: &str, ctx: &egui::Context) -> Result<()> {
         if id != "edit" {
             self.finish_inline(true)?;
@@ -658,20 +771,7 @@ impl MindGlider {
                 let t = &mut self.tabs[self.active];
                 t.fit_pending = true;
             }
-            "edit" => {
-                let t = &self.tabs[self.active];
-                t.history.doc.ensure_editable(&t.primary)?;
-                let n = &t.history.doc.nodes[&t.primary];
-                ensure!(!n.text.unsupported, "{}", msg("app.046", &[]));
-                self.inline = Some(InlineEdit {
-                    tab_id: t.id.clone(),
-                    id: t.primary.clone(),
-                    text: n.text.clone(),
-                    original: n.text.clone(),
-                    focus: true,
-                });
-                ctx.request_repaint();
-            }
+            "edit" => self.start_inline(ctx)?,
             _ => {
                 let tab = &mut self.tabs[self.active];
                 let current = tab.primary.clone();
@@ -716,19 +816,11 @@ impl MindGlider {
                             }
                             Ok(())
                         })?;
-                        if let Some(id) = selected {
-                            tab.select(id);
+                        if let Some(selected) = selected {
+                            tab.select(selected);
                         }
                     }
-                    "delete" => {
-                        let ids = tab.history.doc.top_selected(&tab.selection);
-                        tab.history.edit(tr("app.183"), |d| {
-                            for id in ids {
-                                d.delete(&id)?;
-                            }
-                            Ok(())
-                        })?;
-                    }
+                    "delete" => tab.delete_selection()?,
                     "fold" => {
                         let ids = tab.selection.clone();
                         tab.history.edit(tr("app.130"), |d| {
@@ -888,6 +980,9 @@ impl MindGlider {
         Ok(())
     }
     fn keyboard(&mut self, ctx: &egui::Context) {
+        if self.ai_review.is_some() {
+            return;
+        }
         if self.tabs[self.active].drag.is_some() {
             return;
         }
@@ -952,7 +1047,13 @@ impl MindGlider {
             actions
         });
         for action in actions {
-            let r = self.action(&action, ctx);
+            let r = self.action(&action, ctx).and_then(|_| {
+                if matches!(action.as_str(), "child" | "sibling") {
+                    self.tabs[self.active].ensure_visible = true;
+                    self.start_inline(ctx)?;
+                }
+                Ok(())
+            });
             self.result(r);
         }
         if !typing
@@ -2054,10 +2155,31 @@ impl MindGlider {
         }
         Ok(())
     }
+    fn start_inline(&mut self, ctx: &egui::Context) -> Result<()> {
+        let tab = &mut self.tabs[self.active];
+        tab.history.doc.ensure_editable(&tab.primary)?;
+        let node = &tab.history.doc.nodes[&tab.primary];
+        ensure!(!node.text.unsupported, "{}", msg("app.046", &[]));
+        self.inline = Some(InlineEdit {
+            tab_id: tab.id.clone(),
+            id: tab.primary.clone(),
+            text: node.text.clone(),
+            original: node.text.clone(),
+            focus: true,
+        });
+        if self.filter_active {
+            tab.layout_revision = u64::MAX;
+        }
+        ctx.request_repaint();
+        Ok(())
+    }
     fn finish_inline(&mut self, apply: bool) -> Result<()> {
         let Some(edit) = self.inline.take() else {
             return Ok(());
         };
+        if self.filter_active {
+            self.tabs[self.active].layout_revision = u64::MAX;
+        }
         if apply && edit.text != edit.original {
             let t = self
                 .tabs
@@ -2089,12 +2211,14 @@ impl MindGlider {
         let palette = theme::current(ctx);
         let t = &mut self.tabs[self.active];
         if t.layout_revision != t.history.revision {
-            t.layout.build(&t.history.doc, filter, |s, size| {
-                ctx.fonts(|f| {
-                    f.layout_no_wrap(s.into(), FontId::proportional(size), Color32::BLACK)
-                        .size()
-                })
-            });
+            let included = inline.as_ref().map(|edit| edit.id.as_str());
+            t.layout
+                .build_including(&t.history.doc, filter, included, |s, size| {
+                    ctx.fonts(|f| {
+                        f.layout_no_wrap(s.into(), FontId::proportional(size), Color32::BLACK)
+                            .size()
+                    })
+                });
             t.layout_revision = t.history.revision;
         }
         let mut move_to = None;
@@ -3680,16 +3804,421 @@ impl MindGlider {
             self.status = tr("cli.timeout_invalid").into();
         } else if save {
             let result = ai::optional_args(&self.settings.cli).and_then(|_| self.save_session());
+            if result.is_ok() {
+                self.settings_open = false;
+            }
             self.result(result);
         }
     }
+    fn stage_tree_review(
+        &mut self,
+        tab_id: String,
+        snapshot: ai::Snapshot,
+        plan: ai::EditPlan,
+        request_id: String,
+        started: Instant,
+    ) {
+        let Some(tab) = self.tabs.iter().find(|tab| tab.id == tab_id) else {
+            self.ai_review_tab_closed(&request_id);
+            return;
+        };
+        let add_choices = BTreeSet::new();
+        let review = match ai::preview_tree(&tab.history, &snapshot, &plan, &add_choices) {
+            Ok(review) => review,
+            Err(error) => {
+                Self::log_tree_review_error(&request_id, &error);
+                self.status = msg("app.035", &[("e", format!("{error:#}"))]);
+                return;
+            }
+        };
+        log::info!(
+            "{}",
+            serde_json::json!({
+                "event": "preview_succeeded", "request_id": request_id,
+                "changes": review.changes.len(), "rename_candidates": review.renames.len()
+            })
+        );
+        self.ai_review = Some(PendingTreeReview {
+            tab_id,
+            snapshot,
+            plan,
+            request_id,
+            started,
+            review,
+            add_choices,
+            selected: 0,
+            error: None,
+            apply_failed: false,
+        });
+        self.ai_open = false;
+        self.ai_was_open = false;
+        self.status = tr("ai.review_title").into();
+    }
+
+    fn smoke_ai_review(&mut self) {
+        let tab = &self.tabs[self.active];
+        let doc = &tab.history.doc;
+        let root = &tab.primary;
+        let Some(child) = doc.nodes[root].children.first() else {
+            return;
+        };
+        let Ok(snapshot) = ai::Snapshot::capture(doc, root, tr("ai.review_title")) else {
+            return;
+        };
+        self.stage_tree_review(
+            tab.id.clone(),
+            snapshot,
+            ai::EditPlan {
+                operations: vec![
+                    ai::Operation::Add {
+                        id: child.clone(),
+                        parent: root.clone(),
+                        text: tr("ai.review_rename").into(),
+                    },
+                    ai::Operation::Add {
+                        id: format!("ID_{}", uuid::Uuid::new_v4().simple()),
+                        parent: root.clone(),
+                        text: tr("ai.review_add").into(),
+                    },
+                ],
+            },
+            "smoke-review".into(),
+            Instant::now(),
+        );
+    }
+
+    fn log_tree_review_error(request_id: &str, error: &anyhow::Error) {
+        log::error!(
+            "{}",
+            serde_json::json!({
+                "event": "preview_failed", "request_id": request_id, "code": ai::failure_code(error)
+            })
+        );
+    }
+
+    fn ai_review_tab_closed(&mut self, request_id: &str) {
+        log::error!(
+            "{}",
+            serde_json::json!({
+                "event": "apply_failed", "request_id": request_id, "code": "APPLY_TAB_CLOSED"
+            })
+        );
+        self.status = tr("app.076").into();
+    }
+
+    fn ai_review_dialog(&mut self, ctx: &egui::Context) {
+        if self.closing.is_some() {
+            return;
+        }
+        let Some(mut pending) = self.ai_review.take() else {
+            return;
+        };
+        let Some(tab) = self.tabs.iter_mut().find(|tab| tab.id == pending.tab_id) else {
+            self.ai_review_tab_closed(&pending.request_id);
+            return;
+        };
+        let screen = ctx.screen_rect();
+        let width = (screen.width() - 64.).clamp(150., 760.);
+        let height = (screen.height() - 220.).clamp(75., 550.);
+        let mut open = true;
+        let mut apply = false;
+        let mut chosen = None;
+        let response = egui::Modal::new(egui::Id::new("ai-tree-review"))
+            .frame(egui::Frame::window(&ctx.style()).inner_margin(egui::Margin::same(24)))
+            .show(ctx, |ui| {
+                ui.set_width(width);
+                theme::dialog_header(ui, tr("ai.review_title"), &mut open);
+                ui.label(msg(
+                    "ai.review_count",
+                    &[("0", pending.review.changes.len().to_string())],
+                ));
+                let candidates = &pending.review.renames;
+                let candidate_ids: BTreeSet<_> = candidates
+                    .iter()
+                    .map(|candidate| candidate.result_node_id.as_str())
+                    .collect();
+                let mut candidate_changes = BTreeMap::new();
+                let mut changes = Vec::new();
+                for change in &pending.review.changes {
+                    let id = Self::tree_change_id(change);
+                    if candidate_ids.contains(id) {
+                        candidate_changes.insert(id, change);
+                    } else {
+                        changes.push(change);
+                    }
+                }
+                let row_count = candidates.len() + changes.len();
+                if row_count > 0 {
+                    pending.selected = pending.selected.min(row_count - 1);
+                    let row_height = ui.spacing().interact_size.y;
+                    egui::ScrollArea::vertical()
+                        .id_salt("ai-review-list")
+                        .max_height(height * 0.55)
+                        .auto_shrink([false, true])
+                        .show_rows(ui, row_height, row_count, |ui, rows| {
+                            for index in rows {
+                                let (heading, label, node_id) =
+                                    if let Some(candidate) = candidates.get(index) {
+                                        let id = candidate.result_node_id.as_str();
+                                        let change = candidate_changes.get(id).copied();
+                                        let heading =
+                                            if pending.add_choices.contains(&candidate.operation) {
+                                                tr("ai.review_added").to_owned()
+                                            } else if let Some(change) = change
+                                                && change.kind == ai::ChangeKind::Deleted
+                                            {
+                                                format!(
+                                                    "{} / {}",
+                                                    tr("ai.review_candidate"),
+                                                    tr("ai.review_deleted")
+                                                )
+                                            } else {
+                                                tr("ai.review_candidate").to_owned()
+                                            };
+                                        (
+                                            heading,
+                                            change.map_or_else(
+                                                || {
+                                                    format!(
+                                                        "{} → {}",
+                                                        candidate.before, candidate.after
+                                                    )
+                                                },
+                                                Self::tree_change_label,
+                                            ),
+                                            id,
+                                        )
+                                    } else {
+                                        let change = changes[index - candidates.len()];
+                                        (
+                                            Self::tree_change_heading(change).to_owned(),
+                                            Self::tree_change_label(change),
+                                            Self::tree_change_id(change),
+                                        )
+                                    };
+                                let row = egui::Button::new(format!("{heading}  {label}"))
+                                    .selected(pending.selected == index)
+                                    .truncate();
+                                if ui
+                                    .add_sized([ui.available_width(), row_height], row)
+                                    .on_hover_text(node_id)
+                                    .clicked()
+                                {
+                                    pending.selected = index;
+                                }
+                            }
+                        });
+                    ui.separator();
+                    if let Some(candidate) = candidates.get(pending.selected) {
+                        egui::ScrollArea::vertical()
+                            .id_salt("ai-review-candidate")
+                            .max_height(height * 0.28)
+                            .show(ui, |ui| {
+                                if let Some(change) =
+                                    candidate_changes.get(candidate.result_node_id.as_str())
+                                {
+                                    Self::show_tree_change(ui, change);
+                                } else {
+                                    Self::show_tree_field(
+                                        ui,
+                                        "ai.review_text",
+                                        Some(&candidate.before),
+                                        Some(&candidate.after),
+                                    );
+                                }
+                            });
+                        let was_add = pending.add_choices.contains(&candidate.operation);
+                        let mut as_add = was_add;
+                        ui.horizontal_wrapped(|ui| {
+                            ui.radio_value(&mut as_add, false, tr("ai.review_rename"));
+                            ui.radio_value(&mut as_add, true, tr("ai.review_add"));
+                        });
+                        if as_add != was_add {
+                            chosen = Some((candidate.operation, as_add));
+                        }
+                    } else if let Some(change) = changes.get(pending.selected - candidates.len()) {
+                        egui::ScrollArea::vertical()
+                            .id_salt("ai-review-change")
+                            .max_height(height * 0.36)
+                            .auto_shrink([false, true])
+                            .show(ui, |ui| Self::show_tree_change(ui, change));
+                    }
+                    ui.separator();
+                }
+                if let Some(error) = &pending.error {
+                    ui.colored_label(ui.visuals().error_fg_color, error);
+                }
+                ui.horizontal(|ui| {
+                    if ui.button(tr("ai.review_cancel")).clicked() {
+                        open = false;
+                    }
+                    apply = ui
+                        .add_enabled_ui(
+                            !pending.review.changes.is_empty() && !pending.apply_failed,
+                            |ui| theme::accent_button(ui, tr("ai.review_apply")).clicked(),
+                        )
+                        .inner;
+                });
+            });
+        if response.is_top_modal
+            && !response.any_popup_open
+            && ctx.input_mut(|input| input.consume_key(egui::Modifiers::NONE, egui::Key::Escape))
+        {
+            open = false;
+        }
+        if !open {
+            log::info!(
+                "{}",
+                serde_json::json!({
+                    "event": "apply_skipped", "request_id": pending.request_id, "code": "APPLY_CANCELLED"
+                })
+            );
+            self.status = tr("ai.024").into();
+            return;
+        }
+        if let Some((operation, as_add)) = chosen {
+            let mut choices = pending.add_choices.clone();
+            if as_add {
+                choices.insert(operation);
+            } else {
+                choices.remove(&operation);
+            }
+            match ai::preview_tree(&tab.history, &pending.snapshot, &pending.plan, &choices) {
+                Ok(review) => {
+                    pending.review = review;
+                    pending.add_choices = choices;
+                    pending.error = None;
+                }
+                Err(error) => {
+                    Self::log_tree_review_error(&pending.request_id, &error);
+                    pending.error = Some(msg(
+                        "ai.review_choice_error",
+                        &[("e", format!("{error:#}"))],
+                    ));
+                }
+            }
+        } else if apply {
+            match ai::apply_review_traced(
+                &mut tab.history,
+                &pending.snapshot,
+                &pending.review,
+                &pending.request_id,
+                pending.started,
+            ) {
+                Ok(n) => {
+                    tab.normalize_selection();
+                    self.status = msg("app.036", &[("n", n.to_string())]);
+                    return;
+                }
+                Err(error) => {
+                    pending.error = Some(msg("app.035", &[("e", format!("{error:#}"))]));
+                    pending.apply_failed = true;
+                }
+            }
+        }
+        self.ai_review = Some(pending);
+    }
+
+    fn tree_change_heading(change: &ai::TreeChange) -> &'static str {
+        match change.kind {
+            ai::ChangeKind::Added => tr("ai.review_added"),
+            ai::ChangeKind::Deleted => tr("ai.review_deleted"),
+            ai::ChangeKind::Modified if change.moved => tr("ai.review_moved"),
+            ai::ChangeKind::Modified if change.reordered => tr("ai.review_reordered"),
+            ai::ChangeKind::Modified => tr("ai.review_modified"),
+        }
+    }
+
+    fn tree_change_id(change: &ai::TreeChange) -> &str {
+        change
+            .after
+            .as_ref()
+            .or(change.before.as_ref())
+            .map_or("", |node| node.node_id.as_str())
+    }
+
+    fn tree_change_label(change: &ai::TreeChange) -> String {
+        match (&change.before, &change.after) {
+            (Some(before), Some(after)) if before.text != after.text => {
+                format!("{} → {}", before.text, after.text)
+            }
+            _ => change
+                .after
+                .as_ref()
+                .or(change.before.as_ref())
+                .map_or_else(String::new, |node| node.text.clone()),
+        }
+    }
+
+    fn show_tree_field(ui: &mut egui::Ui, field: &str, before: Option<&str>, after: Option<&str>) {
+        ui.strong(tr(field));
+        if let Some(before) = before {
+            ui.label(msg("ai.review_old", &[("0", before.to_owned())]));
+        }
+        if let Some(after) = after {
+            ui.label(msg("ai.review_new", &[("0", after.to_owned())]));
+        }
+    }
+
+    fn show_tree_change(ui: &mut egui::Ui, change: &ai::TreeChange) {
+        let before = change.before.as_ref();
+        let after = change.after.as_ref();
+        Self::show_tree_field(
+            ui,
+            "ai.review_text",
+            before.map(|node| node.text.as_str()),
+            after.map(|node| node.text.as_str()),
+        );
+        if change.moved || before.is_none() || after.is_none() {
+            Self::show_tree_field(
+                ui,
+                "ai.review_parent",
+                before.and_then(|node| node.parent.as_deref()),
+                after.and_then(|node| node.parent.as_deref()),
+            );
+        }
+        if change.reordered {
+            ui.label(tr("ai.review_reordered"));
+        }
+        if change.moved || change.reordered || before.is_none() || after.is_none() {
+            let old_position = before
+                .and_then(|node| node.position)
+                .map(|position| position.to_string());
+            let new_position = after
+                .and_then(|node| node.position)
+                .map(|position| position.to_string());
+            if old_position.is_some() || new_position.is_some() {
+                Self::show_tree_field(
+                    ui,
+                    "ai.review_position",
+                    old_position.as_deref(),
+                    new_position.as_deref(),
+                );
+            }
+        }
+        let note = (
+            before.map(|node| node.note.as_str()).unwrap_or_default(),
+            after.map(|node| node.note.as_str()).unwrap_or_default(),
+        );
+        if note.0 != note.1 {
+            Self::show_tree_field(ui, "ai.review_note", Some(note.0), Some(note.1));
+        }
+        let details = (
+            before.map(|node| node.details.as_str()).unwrap_or_default(),
+            after.map(|node| node.details.as_str()).unwrap_or_default(),
+        );
+        if details.0 != details.1 {
+            Self::show_tree_field(ui, "ai.review_details", Some(details.0), Some(details.1));
+        }
+    }
+
     fn ai_dialog(&mut self, ctx: &egui::Context) {
         if self.ai_open
             && !ctx.memory(|m| m.is_popup_open(combo_popup_id("ai-instruction")))
             && ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Escape))
         {
             if let Some(task) = &self.ai_task {
-                task.cancel.store(true, Ordering::Relaxed);
+                task.request_cancel("ESCAPE");
             }
             self.ai_open = false;
             self.ai_was_open = false;
@@ -3700,13 +4229,33 @@ impl MindGlider {
                 Ok(result) => {
                     let tab_id = task.tab_id.clone();
                     let snapshot = task.snapshot.clone();
+                    let request_id = task.request_id.clone();
+                    let started = task.started;
                     let cancelled = task.cancel.load(Ordering::Relaxed);
                     self.ai_task = None;
                     match result {
-                        Ok(_) if cancelled => self.status = tr("ai.024").into(),
+                        Ok(_) if cancelled => {
+                            log::info!(
+                                "{}",
+                                serde_json::json!({
+                                    "event": "apply_skipped", "request_id": request_id,
+                                    "code": "APPLY_CANCELLED", "elapsed_ms": started.elapsed().as_millis()
+                                })
+                            );
+                            self.status = tr("ai.024").into();
+                        }
+                        Ok(plan) if !snapshot.is_title_only() => {
+                            self.stage_tree_review(tab_id, snapshot, plan, request_id, started);
+                        }
                         Ok(plan) => {
                             if let Some(tab) = self.tabs.iter_mut().find(|t| t.id == tab_id) {
-                                match ai::apply(&mut tab.history, &snapshot, &plan) {
+                                match ai::apply_traced(
+                                    &mut tab.history,
+                                    &snapshot,
+                                    &plan,
+                                    &request_id,
+                                    started,
+                                ) {
                                     Ok(n) => {
                                         tab.normalize_selection();
                                         self.status = msg("app.036", &[("n", format!("{n}"))]);
@@ -3716,6 +4265,13 @@ impl MindGlider {
                                     }
                                 }
                             } else {
+                                log::error!(
+                                    "{}",
+                                    serde_json::json!({
+                                        "event": "apply_failed", "request_id": request_id,
+                                        "code": "APPLY_TAB_CLOSED", "elapsed_ms": started.elapsed().as_millis()
+                                    })
+                                );
                                 self.status = tr("app.076").into();
                             }
                         }
@@ -3723,11 +4279,22 @@ impl MindGlider {
                     }
                 }
                 Err(std::sync::mpsc::TryRecvError::Disconnected) => {
+                    log::error!(
+                        "{}",
+                        serde_json::json!({
+                            "event": "cli_failed", "request_id": task.request_id,
+                            "code": "CLI_WORKER_DISCONNECTED", "elapsed_ms": task.started.elapsed().as_millis()
+                        })
+                    );
                     self.ai_task = None;
                     self.status = tr("app.075").into();
                 }
                 Err(_) => {}
             }
+        }
+        if self.ai_review.is_some() {
+            self.ai_review_dialog(ctx);
+            return;
         }
         if !self.ai_open {
             self.ai_was_open = false;
@@ -3751,19 +4318,35 @@ impl MindGlider {
             trigger
         });
         let mut open = true;
-        let run = enter && self.ai_task.is_none() && !self.ai_prompt.trim().is_empty();
+        // Leave room for the dialog frame even on a narrow viewport.
+        let max_width = (ctx.screen_rect().width() - 64.).max(1.);
+        let min_width = 530_f32.min(max_width);
         crate::theme::window(ctx, tr("app.074"), "app.074")
-            .default_width(530.)
+            .default_width(min_width)
+            .min_width(min_width)
+            .max_width(max_width)
             .show(ctx, |ui| {
                 crate::theme::dialog_header(ui, tr("app.074"), &mut open);
                 let t = &self.tabs[self.active];
-                ui.label(msg(
-                    "app.033",
-                    &[
-                        ("0", t.history.doc.nodes[&t.primary].text.text().to_string()),
-                        ("1", format!("{}", t.history.doc.subtree(&t.primary).len())),
-                    ],
-                ));
+                ui.add_enabled_ui(self.ai_task.is_none(), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.selectable_value(&mut self.ai_title_only, false, tr("ai.tree_mode"));
+                        ui.selectable_value(&mut self.ai_title_only, true, tr("ai.title_mode"));
+                    });
+                });
+                let title = t.history.doc.nodes[&t.primary].text.text();
+                if self.ai_title_only {
+                    ui.label(msg("ai.title_target", &[("0", title)]));
+                    ui.label(tr("ai.title_context"));
+                } else {
+                    ui.label(msg(
+                        "app.033",
+                        &[
+                            ("0", title),
+                            ("1", t.history.doc.subtree(&t.primary).len().to_string()),
+                        ],
+                    ));
+                }
                 ui.label(msg(
                     "app.032",
                     &[(
@@ -3779,12 +4362,18 @@ impl MindGlider {
                     .iter()
                     .map(|text| (text.clone(), text.clone()))
                     .collect();
-                let response = editable_combo(
+                let hint = if self.ai_title_only {
+                    tr("ai.title_hint")
+                } else {
+                    tr("app.073")
+                };
+                let response = editable_combo_with_hint(
                     ui,
                     "ai-instruction",
                     &mut self.ai_prompt,
                     &items,
                     ui.available_width(),
+                    hint,
                 );
                 if self.ai_focus {
                     response.request_focus();
@@ -3792,7 +4381,11 @@ impl MindGlider {
                 }
                 ui.label(tr("ai.keyboard_hint"));
                 ui.label(tr("app.072"));
-                ui.label(tr("app.071"));
+                ui.label(tr(if self.ai_title_only {
+                    "app.071"
+                } else {
+                    "ai.review_before_apply"
+                }));
                 if let Some(task) = &self.ai_task {
                     ui.horizontal(|ui| {
                         ui.spinner();
@@ -3807,11 +4400,29 @@ impl MindGlider {
         if !open {
             self.ai_was_open = false;
         }
+        let run = enter
+            && self.ai_task.is_none()
+            && (self.ai_title_only || !self.ai_prompt.trim().is_empty());
         if run && open {
             let t = &self.tabs[self.active];
-            match ai::Snapshot::capture(&t.history.doc, &t.primary, &self.ai_prompt) {
+            let log_failure = |code: &str| {
+                log::error!(
+                    "{}",
+                    serde_json::json!({
+                        "event": "ai_preflight_failed", "request_id": uuid::Uuid::new_v4().simple().to_string(),
+                        "code": code, "tab_id": t.id, "root_id": t.primary, "provider": self.settings.cli.provider
+                    })
+                );
+            };
+            let snapshot = if self.ai_title_only {
+                ai::Snapshot::capture_title(&t.history.doc, &t.primary, &self.ai_prompt)
+            } else {
+                ai::Snapshot::capture(&t.history.doc, &t.primary, &self.ai_prompt)
+            };
+            match snapshot {
                 Ok(snapshot) => {
                     if let Err(e) = ai::optional_args(&self.settings.cli) {
+                        log_failure("AI_INVALID_ARGUMENTS");
                         self.status = e.to_string();
                         return;
                     }
@@ -3821,6 +4432,7 @@ impl MindGlider {
                     ) {
                         Ok(items) => self.ai_history = items,
                         Err(e) => {
+                            log_failure("AI_HISTORY_WRITE");
                             self.status = e.to_string();
                             return;
                         }
@@ -3834,7 +4446,10 @@ impl MindGlider {
                     ));
                     self.status = tr("app.069").into();
                 }
-                Err(e) => self.status = e.to_string(),
+                Err(e) => {
+                    log_failure("AI_SNAPSHOT_REJECTED");
+                    self.status = e.to_string();
+                }
             }
         }
     }
@@ -4107,7 +4722,10 @@ impl MindGlider {
                 && (matches!(closing, Closing::Quit)
                     || matches!(closing,Closing::Tab(i) if self.tabs[i].id==task.tab_id))
             {
-                task.cancel.store(true, Ordering::Relaxed);
+                task.request_cancel(match closing {
+                    Closing::Quit => "APP_QUIT",
+                    Closing::Tab(_) => "TAB_CLOSED",
+                });
             }
             match closing {
                 Closing::Tab(i) => {
@@ -4150,7 +4768,14 @@ impl MindGlider {
     }
 }
 impl eframe::App for MindGlider {
-    fn raw_input_hook(&mut self, _ctx: &egui::Context, input: &mut egui::RawInput) {
+    fn raw_input_hook(&mut self, ctx: &egui::Context, input: &mut egui::RawInput) {
+        // egui clears text focus on Escape before update, so filter IME keys here.
+        if input.focused {
+            let time = input.time.unwrap_or_else(|| ctx.input(|i| i.time));
+            self.ime_guard.filter(&mut input.events, time);
+        } else {
+            self.ime_guard.reset();
+        }
         // Deterministic pointer gestures for --smoke-view drag-* verification only.
         let Some(mode) = self
             .smoke_drag_mode
@@ -4234,13 +4859,6 @@ impl eframe::App for MindGlider {
         {
             ctx.set_pixels_per_point(scale);
         }
-        ctx.input_mut(|i| {
-            if !i.focused {
-                self.ime_guard.reset();
-            } else {
-                self.ime_guard.filter(&mut i.events, i.time);
-            }
-        });
         if ctx.input(|i| i.viewport().close_requested())
             && self.closing.is_none()
             && !self.allow_exit
@@ -4268,6 +4886,10 @@ impl eframe::App for MindGlider {
             });
         theme::apply(ctx, preview.unwrap_or(committed));
         self.toolbar(ctx);
+        self.update_notice(ctx);
+        if self.allow_exit {
+            return;
+        }
         egui::TopBottomPanel::bottom("status")
             .exact_height(24.)
             .frame(
@@ -4480,6 +5102,370 @@ impl Settings {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mindglider::conditions::{Field, Operator};
+
+    #[test]
+    fn tree_review_requires_confirmation_and_applies_one_undoable_edit() {
+        use egui::accesskit::{Action, ActionRequest};
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        let mut doc = Document::default();
+        let root = doc.root.clone();
+        let child = doc.add(&root, "Before rename").unwrap();
+        app.tabs = vec![Tab::new(doc.clone(), None)];
+        app.active = 0;
+        let stage = |app: &mut MindGlider| {
+            app.stage_tree_review(
+                app.tabs[0].id.clone(),
+                ai::Snapshot::capture(&doc, &root, "Restructure").unwrap(),
+                ai::EditPlan {
+                    operations: vec![
+                        ai::Operation::Add {
+                            id: child.clone(),
+                            parent: root.clone(),
+                            text: "After rename".into(),
+                        },
+                        ai::Operation::Add {
+                            id: "ID_add".into(),
+                            parent: root.clone(),
+                            text: "New sibling".into(),
+                        },
+                    ],
+                },
+                "review-test".into(),
+                Instant::now(),
+            );
+        };
+        let run = |app: &mut MindGlider, events| {
+            ctx.run(
+                egui::RawInput {
+                    events,
+                    screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(1100., 750.))),
+                    ..Default::default()
+                },
+                |ctx| app.ai_review_dialog(ctx),
+            )
+        };
+        stage(&mut app);
+        let output = run(&mut app, Vec::new());
+        assert_eq!(app.tabs[0].history.doc, doc);
+        let nodes = output.platform_output.accesskit_update.unwrap().nodes;
+        let rename_label = format!(
+            "{}  Before rename → After rename",
+            tr("ai.review_candidate")
+        );
+        let duplicate = format!("{}  Before rename → After rename", tr("ai.review_modified"));
+        assert_eq!(
+            nodes
+                .iter()
+                .filter(|(_, node)| node.label() == Some(&rename_label))
+                .count(),
+            1
+        );
+        assert!(
+            !nodes
+                .iter()
+                .any(|(_, node)| node.label() == Some(&duplicate))
+        );
+        let find = |nodes: &[(egui::accesskit::NodeId, egui::accesskit::Node)], key| {
+            nodes
+                .iter()
+                .find(|(_, node)| node.label() == Some(tr(key)))
+                .unwrap()
+                .0
+        };
+        let button = find(&nodes, "ai.review_apply");
+        let invoke = |target| {
+            vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target,
+                data: None,
+            })]
+        };
+        let _ = run(&mut app, invoke(find(&nodes, "ai.review_add")));
+        let nodes = run(&mut app, Vec::new())
+            .platform_output
+            .accesskit_update
+            .unwrap()
+            .nodes;
+        let add_label = format!("{}  After rename", tr("ai.review_added"));
+        assert_eq!(
+            nodes
+                .iter()
+                .filter(|(_, node)| node.label() == Some(&add_label))
+                .count(),
+            1
+        );
+        assert!(
+            !nodes
+                .iter()
+                .any(|(_, node)| node.label() == Some(&rename_label))
+        );
+        assert_eq!(app.tabs[0].history.doc, doc);
+        let _ = run(&mut app, invoke(find(&nodes, "ai.review_rename")));
+        let nodes = run(&mut app, Vec::new())
+            .platform_output
+            .accesskit_update
+            .unwrap()
+            .nodes;
+        assert_eq!(
+            nodes
+                .iter()
+                .filter(|(_, node)| node.label() == Some(&rename_label))
+                .count(),
+            1
+        );
+        assert!(
+            !nodes
+                .iter()
+                .any(|(_, node)| node.label() == Some(&add_label))
+        );
+        let _ = run(
+            &mut app,
+            vec![egui::Event::Key {
+                key: egui::Key::Escape,
+                physical_key: Some(egui::Key::Escape),
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
+        );
+        assert!(app.ai_review.is_none());
+        assert_eq!(app.tabs[0].history.doc, doc);
+
+        stage(&mut app);
+        let _ = run(&mut app, Vec::new());
+        let _ = run(
+            &mut app,
+            vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: button,
+                data: None,
+            })],
+        );
+        assert!(app.ai_review.is_none());
+        let history = &mut app.tabs[0].history;
+        assert_eq!(history.doc.nodes[&child].text.text(), "After rename");
+        assert_eq!(history.doc.nodes["ID_add"].text.text(), "New sibling");
+        history.undo();
+        assert_eq!(history.doc, doc);
+    }
+
+    #[test]
+    fn approved_update_waits_for_successful_session_save_before_restarting() {
+        use egui::accesskit::{Action, ActionRequest};
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("mindglider.exe");
+        std::fs::write(&path, "previous").unwrap();
+        let mut watch = update::Watch::new(path.clone()).unwrap();
+        std::fs::write(&path, "replacement").unwrap();
+        watch.refresh();
+        let (tx, rx) = std::sync::mpsc::channel();
+        app.watch_updates(watch, tx);
+        app.tabs = vec![Tab::new(Document::default(), None)];
+        app.active = 0;
+        app.start_inline(&ctx).unwrap();
+        app.inline.as_mut().unwrap().text.edit("Unsaved draft");
+        let blocked = dir.path().join("blocked");
+        std::fs::write(&blocked, "file instead of directory").unwrap();
+        app.data = blocked;
+
+        let output = ctx.run(Default::default(), |ctx| app.update_notice(ctx));
+        let (button, _) = output
+            .platform_output
+            .accesskit_update
+            .unwrap()
+            .nodes
+            .into_iter()
+            .find(|(_, node)| node.label() == Some(tr("update.restart")))
+            .unwrap();
+        let click = || egui::RawInput {
+            events: vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: button,
+                data: None,
+            })],
+            ..Default::default()
+        };
+        let _ = ctx.run(click(), |ctx| app.update_notice(ctx));
+        assert!(!app.allow_exit);
+        assert!(rx.try_recv().is_err());
+
+        app.data = dir.path().join("data");
+        let _ = ctx.run(click(), |ctx| app.update_notice(ctx));
+        assert!(app.allow_exit);
+        assert!(rx.try_recv().is_ok());
+        let settings: Settings =
+            serde_json::from_slice(&std::fs::read(app.data.join("settings.json")).unwrap())
+                .unwrap();
+        let tab = &settings.tabs[0];
+        assert!(tab.recovery);
+        let recovered =
+            mm::read(&std::fs::read(app.data.join(format!("recovery-{}.mm", tab.id))).unwrap())
+                .unwrap();
+        assert_eq!(
+            recovered.nodes[&recovered.root].text.text(),
+            "Unsaved draft"
+        );
+    }
+
+    #[test]
+    fn ai_dialog_expands_a_narrow_saved_width_and_fits_a_small_viewport() {
+        let ctx = egui::Context::default();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        let id = egui::Id::new(("app.074", "fluent-v1"));
+        let screen = |width| Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(width, 700.)));
+        for _ in 0..3 {
+            let _ = ctx.run(
+                egui::RawInput {
+                    screen_rect: screen(900.),
+                    ..Default::default()
+                },
+                |ctx| {
+                    crate::theme::window(ctx, "AI", "app.074")
+                        .default_width(213.)
+                        .show(ctx, |ui| ui.set_min_width(213.));
+                },
+            );
+        }
+        let dialog_rect = || ctx.memory(|memory| memory.area_rect(id)).unwrap();
+        assert!(dialog_rect().width() < 300.);
+
+        app.ai_open = true;
+        for width in [900., 450., 900.] {
+            for _ in 0..3 {
+                let _ = ctx.run(
+                    egui::RawInput {
+                        screen_rect: screen(width),
+                        ..Default::default()
+                    },
+                    |ctx| app.ai_dialog(ctx),
+                );
+            }
+            let rect = dialog_rect();
+            assert!(rect.left() >= 0. && rect.right() <= width, "{rect:?}");
+            if width == 900. {
+                assert!(rect.width() >= 530. + 48., "{rect:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn tab_and_enter_create_nodes_with_a_focused_editor_even_when_filtered() {
+        let ctx = egui::Context::default();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        app.tabs = vec![Tab::new(Document::default(), None)];
+        app.active = 0;
+        app.filter_active = true;
+        app.filter = Condition::Match {
+            field: Field::Text,
+            op: Operator::StartsWith,
+            value: "match".into(),
+            case_sensitive: true,
+        };
+        let frame = |app: &mut MindGlider, events| {
+            let _ = ctx.run(
+                egui::RawInput {
+                    events,
+                    screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(900., 650.))),
+                    ..Default::default()
+                },
+                |ctx| {
+                    app.keyboard(ctx);
+                    app.canvas(ctx);
+                },
+            );
+        };
+        let tap = |key| {
+            [true, false]
+                .into_iter()
+                .map(|pressed| egui::Event::Key {
+                    key,
+                    physical_key: None,
+                    pressed,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                })
+                .collect()
+        };
+        let root = app.tabs[0].primary.clone();
+        frame(&mut app, vec![]);
+        for (key, text) in [
+            (egui::Key::Tab, "match one"),
+            (egui::Key::Enter, "match two"),
+        ] {
+            frame(&mut app, tap(key));
+            let id = app.tabs[0].primary.clone();
+            assert_eq!(app.inline.as_ref().unwrap().id, id);
+            let widget = ctx.memory(|memory| memory.focused()).unwrap();
+            assert!(egui::text_edit::TextEditState::load(&ctx, widget).is_some());
+            frame(&mut app, vec![egui::Event::Text(text.into())]);
+            frame(&mut app, tap(egui::Key::Enter));
+            assert!(app.inline.is_none());
+            let node = &app.tabs[0].history.doc.nodes[&id];
+            assert_eq!(node.text.text(), text);
+            assert_eq!(node.parent.as_deref(), Some(root.as_str()));
+        }
+        assert!(app.filter_active);
+    }
+
+    #[test]
+    fn deletion_selects_next_sibling_then_previous_then_parent() {
+        let mut doc = Document::default();
+        let root = doc.root.clone();
+        let parent = doc.add(&root, "parent").unwrap();
+        let first = doc.add(&parent, "first").unwrap();
+        let second = doc.add(&parent, "second").unwrap();
+        let third = doc.add(&parent, "third").unwrap();
+        let mut tab = Tab::new(doc, None);
+        for (removed, next) in [
+            (first, &second),
+            (third, &second),
+            (second.clone(), &parent),
+        ] {
+            tab.select(removed.clone());
+            tab.delete_selection().unwrap();
+            assert_eq!(&tab.primary, next);
+            assert_eq!(tab.selection, BTreeSet::from([next.clone()]));
+            assert!(!tab.history.doc.nodes.contains_key(&removed));
+        }
+    }
+
+    #[test]
+    fn deleting_multiple_nodes_skips_deleted_siblings_and_uses_the_primary_branch() {
+        let mut doc = Document::default();
+        let root = doc.root.clone();
+        let first = doc.add(&root, "first").unwrap();
+        let child = doc.add(&first, "child").unwrap();
+        let second = doc.add(&root, "second").unwrap();
+        let third = doc.add(&root, "third").unwrap();
+        let mut tab = Tab::new(doc, None);
+        tab.select(child);
+        tab.selection.extend([first, second]);
+        tab.delete_selection().unwrap();
+        assert_eq!(tab.primary, third);
+        assert_eq!(tab.history.doc.nodes.len(), 2);
+    }
     #[test]
     fn all_default_shortcuts_parse() {
         for (id, _, key) in commands() {
@@ -4512,6 +5498,49 @@ mod tests {
 #[cfg(test)]
 mod preference_tests {
     use super::*;
+    #[test]
+    fn settings_save_closes_the_dialog_only_after_writing() {
+        use egui::accesskit::{Action, ActionRequest};
+
+        let ctx = egui::Context::default();
+        ctx.enable_accesskit();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        let dir = tempfile::tempdir().unwrap();
+        let blocked = dir.path().join("blocked");
+        std::fs::write(&blocked, "").unwrap();
+        app.data = blocked;
+        app.settings_open = true;
+        app.settings_page = 0;
+        let output = ctx.run(Default::default(), |ctx| app.settings_dialog(ctx));
+        let save_label = tr("app.080");
+        let (save_button, _) = output
+            .platform_output
+            .accesskit_update
+            .unwrap()
+            .nodes
+            .into_iter()
+            .find(|(_, node)| node.label() == Some(save_label))
+            .unwrap();
+        let click_save = || egui::RawInput {
+            events: vec![egui::Event::AccessKitActionRequest(ActionRequest {
+                action: Action::Click,
+                target: save_button,
+                data: None,
+            })],
+            ..Default::default()
+        };
+        let _ = ctx.run(click_save(), |ctx| app.settings_dialog(ctx));
+        assert!(app.settings_open);
+        app.data = dir.path().into();
+        let _ = ctx.run(click_save(), |ctx| app.settings_dialog(ctx));
+        assert!(dir.path().join("settings.json").is_file());
+        assert!(!app.settings_open);
+    }
+
     #[test]
     fn f12_is_the_default_and_legacy_binding_is_migrated() {
         assert_eq!(Settings::default().shortcuts["ai"], "F12");

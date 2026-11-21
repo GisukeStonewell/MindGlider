@@ -6,6 +6,7 @@ pub mod fonts;
 pub mod i18n;
 pub mod input;
 pub mod layout;
+pub mod logging;
 pub mod mm;
 pub mod model;
 pub mod native;

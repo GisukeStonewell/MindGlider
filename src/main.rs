@@ -1,8 +1,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use mindglider::i18n::msg;
+use mindglider::i18n::{msg, tr};
 mod app;
 mod theme;
 mod ui_helpers;
+mod update;
 #[cfg(windows)]
 mod windows_frame;
 use mindglider::{
@@ -11,22 +12,52 @@ use mindglider::{
 };
 
 fn main() {
+    let watch = std::env::current_exe()
+        .map_err(anyhow::Error::from)
+        .and_then(update::Watch::new);
+    let data = mindglider::storage::data_dir();
+    let logger = match mindglider::logging::init(&data) {
+        Ok(handle) => Some(handle),
+        Err(error) => {
+            let detail = format!("LOG_INIT_FAILED: {error:#}");
+            let _ = mindglider::storage::atomic_write(&data.join("error.log"), detail.as_bytes());
+            eprintln!("{detail}");
+            None
+        }
+    };
+    log::info!(
+        "{}",
+        serde_json::json!({
+            "event": "app_started", "version": env!("CARGO_PKG_VERSION"), "pid": std::process::id()
+        })
+    );
     std::panic::set_hook(Box::new(|info| {
+        log::error!(target: "mindglider::fatal", "APP_PANIC: {info}");
         let _ = mindglider::storage::atomic_write(
             &mindglider::storage::data_dir().join("error.log"),
             info.to_string().as_bytes(),
         );
     }));
-    if let Err(e) = run() {
+    let watch = watch
+        .map_err(|error| log::warn!("UPDATE_WATCH_UNAVAILABLE {error:#}"))
+        .ok();
+    if let Err(e) = run(watch) {
+        log::error!(target: "mindglider::fatal", "APP_START_FAILED: {e:#}");
         let _ = mindglider::storage::atomic_write(
             &mindglider::storage::data_dir().join("error.log"),
             format!("{e:#}").as_bytes(),
         );
         eprintln!("{e:#}");
+        if let Some(logger) = logger {
+            logger.shutdown();
+        }
         std::process::exit(1);
     }
+    if let Some(logger) = logger {
+        logger.shutdown();
+    }
 }
-fn run() -> anyhow::Result<()> {
+fn run(watch: Option<update::Watch>) -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.get(1).is_some_and(|a| a == "--roundtrip") {
         let doc = mindglider::mm::read(&std::fs::read(&args[2])?)?;
@@ -102,14 +133,30 @@ fn run() -> anyhow::Result<()> {
             .with_maximized(args.iter().any(|a| a == "--smoke")),
         ..Default::default()
     };
+    let (restart_sender, restart_receiver) = std::sync::mpsc::channel::<update::Restart>();
     eframe::run_native(
         "MindGlider",
         options,
         Box::new(move |cc| {
             #[cfg(windows)]
             windows_frame::install_resize_border(cc)?;
-            Ok(Box::new(app::MindGlider::new(cc, args, start)))
+            let mut app = app::MindGlider::new(cc, args, start);
+            if let Some(watch) = watch {
+                app.watch_updates(watch, restart_sender);
+            }
+            Ok(Box::new(app))
         }),
     )
-    .map_err(|e| anyhow::anyhow!("{e}"))
+    .map_err(|e| anyhow::anyhow!("{e}"))?;
+    if let Ok(restart) = restart_receiver.try_recv()
+        && let Err(error) = restart.launch()
+    {
+        log::error!("UPDATE_RESTART_FAILED {error:#}");
+        rfd::MessageDialog::new()
+            .set_level(rfd::MessageLevel::Error)
+            .set_title("MindGlider")
+            .set_description(format!("{}\n\n{error}", tr("update.restart_failed")))
+            .show();
+    }
+    Ok(())
 }

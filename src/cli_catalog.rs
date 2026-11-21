@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 use std::{
     io::{BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
+    process::Stdio,
     sync::mpsc,
     time::{Duration, Instant},
 };
@@ -169,10 +169,7 @@ pub fn local(provider: Provider) -> Catalog {
 }
 /// A short-lived stdio control handshake only. Child termination bounds unsupported CLI versions.
 fn remote(settings: &CliSettings, work: &Path) -> Result<Vec<ModelChoice>> {
-    let mut cmd = Command::new(match settings.provider {
-        Provider::Codex => &settings.codex,
-        Provider::Claude => &settings.claude,
-    });
+    let mut cmd = settings.command();
     match settings.provider {
         Provider::Codex => {
             cmd.args(["app-server", "--stdio"]);

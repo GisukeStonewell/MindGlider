@@ -4,15 +4,15 @@ English | [日本語](README.md)
 
 **MindGlider is a Windows 11 mind-mapping application ported and reimplemented from Freeplane in Rust with AI assistance, focusing on a selected subset of features.** It uses Rust, egui/eframe and wgpu and does not require Java.
 
-> **This is the first public preview. Even the author who performed the port has not tried every feature or combination of operations.** Bugs and compatibility gaps may remain. Try it on copies of important maps.
+> **This is a public preview.** Bugs and compatibility gaps may remain. Try it on copies of important maps.
 
 ## Download
 
-Download `MindGlider-0.10.0-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases), extract it to a writable directory and run `mindglider.exe`. Neither Java nor Rust is needed to run the application. Verify the ZIP against the accompanying `SHA256SUMS.txt` if desired.
+Download `MindGlider-0.11.0-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases/tag/v0.11.0), extract it to a writable directory and run `mindglider.exe`. Neither Java nor Rust is needed to run the application. Verify the ZIP against the accompanying `SHA256SUMS.txt`.
 
 Choose one of ten palettes under **View → Theme**. Hover over a theme to preview it and click to save your choice. The corresponding source is available through the **Source code** downloads on the same release page.
 
-The supported target is **Windows 11 x64**. The initial release is marked as a **Pre-release**. AI CLIs are optional for ordinary mind-map editing.
+The supported target is **Windows 11 x64**. AI CLIs are optional for ordinary mind-map editing. [v0.11.0 release notes](docs/releases/v0.11.0.md) | [Updating an existing install](docs/usage.en.md#updating-while-mindglider-is-running)
 
 ## Features
 
@@ -31,12 +31,12 @@ MindGlider adds the ability to **invoke a locally installed Codex or Claude Code
 
 1. Install your preferred CLI separately and sign in using its normal authentication flow.
 2. Select the provider, executable, model and other options in MindGlider settings. The fixed prompt is editable.
-3. Select a branch, press **F12**, enter instructions, and press Enter to run.
-4. A valid result is applied atomically after scope, structure and conflict checks. **One Undo restores the entire change.**
+3. Select a node, press **F12**, then choose **Edit subtree** or **Change title only**.
+4. With **Edit subtree**, review additions, deletions and moves before applying them together. For a rename candidate, you can switch between renaming the existing node and adding a new one. **Change title only** changes the selected node's text. **One Undo restores the entire change** in either mode.
 
 **MindGlider does not implement direct calls to AI-provider APIs.** There is no API-key configuration in MindGlider. Network communication, authentication, service availability and charges are governed by the CLI and its provider.
 
-The selected branch's text, notes, details and your instructions are passed to the CLI. Images, unselected branches and the contents of linked local files are not passed by default. A CLI may read local knowledge files explicitly requested in your instructions. Settings, prompt history and recovery data are stored in `data`; check them for private information before sharing.
+**Edit subtree** passes the selected branch's text, notes, details and your instructions to the CLI. **Change title only** provides context from the subtree rooted at the selected node's parent. Images and linked local file contents are omitted from the request. A CLI may read local knowledge files explicitly requested in your instructions. Diagnostic logs record CLI execution and whether changes were applied. [Diagnostic log settings](docs/usage.en.md#ai-diagnostic-logs)
 
 [English user guide](docs/usage.en.md) | [CLI options (Japanese)](docs/cli-options.md) | [Feature matrix](FEATURES.md)
 
@@ -44,7 +44,7 @@ The selected branch's text, notes, details and your instructions are passed to t
 
 | Action | Shortcut / gesture |
 |---|---|
-| Add child / sibling | Tab / Enter |
+| Add child / sibling and start editing | Tab / Enter |
 | Edit text on a node | F2 / double-click |
 | New line / commit / cancel | Shift+Enter / Enter / Esc |
 | Select an icon | Ctrl+F2 |

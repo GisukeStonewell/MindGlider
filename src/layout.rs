@@ -78,11 +78,20 @@ impl LayoutCache {
         &mut self,
         doc: &Document,
         filter: Option<&Condition>,
+        measure: impl FnMut(&str, f32) -> Vec2,
+    ) -> Scene {
+        self.build_including(doc, filter, None, measure)
+    }
+    pub fn build_including(
+        &mut self,
+        doc: &Document,
+        filter: Option<&Condition>,
+        included: Option<&str>,
         mut measure: impl FnMut(&str, f32) -> Vec2,
     ) -> Scene {
         let mut keep = BTreeSet::new();
         for id in doc.nodes.keys() {
-            if filter.is_none_or(|c| c.matches(doc, id)) {
+            if included == Some(id.as_str()) || filter.is_none_or(|c| c.matches(doc, id)) {
                 let mut cur = Some(id.clone());
                 while let Some(id) = cur {
                     keep.insert(id.clone());

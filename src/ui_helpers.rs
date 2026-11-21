@@ -92,6 +92,17 @@ pub fn editable_combo(
     items: &[(String, String)],
     width: f32,
 ) -> egui::Response {
+    editable_combo_with_hint(ui, id, text, items, width, tr("cli.default"))
+}
+
+pub fn editable_combo_with_hint(
+    ui: &mut egui::Ui,
+    id: &str,
+    text: &mut String,
+    items: &[(String, String)],
+    width: f32,
+    hint: &str,
+) -> egui::Response {
     ui.scope(|ui| {
         let popup_id = combo_popup_id(id);
         let (rect, anchor) = ui.allocate_exact_size(egui::vec2(width, 32.), egui::Sense::hover());
@@ -103,11 +114,7 @@ pub fn editable_combo(
                 .frame(false)
                 .margin(egui::Margin::symmetric(12, 6))
                 .id_salt(id)
-                .hint_text(if id == "ai-instruction" {
-                    tr("app.073")
-                } else {
-                    tr("cli.default")
-                }),
+                .hint_text(hint),
         );
         let arrow_rect =
             egui::Rect::from_min_max(egui::pos2(rect.right() - 32., rect.top()), rect.max);
@@ -711,7 +718,7 @@ mod tests {
 }
 
 #[cfg(test)]
-mod ime_enter_tests {
+mod ime_tests {
     use super::*;
     #[test]
     fn commit_enter_does_not_insert_newline_in_a_text_widget() {
@@ -761,6 +768,61 @@ mod ime_enter_tests {
             draw(&mut rich, events);
             assert_eq!(rich.text(), "日本");
         }
+    }
+
+    #[test]
+    fn escape_cancels_ai_preedit_without_closing_or_unfocusing() {
+        let ctx = egui::Context::default();
+        install_fonts(&ctx);
+        let mut guard = mindglider::input::ImeGuard::default();
+        let mut text = String::new();
+        let mut open = true;
+        let mut focused = false;
+        let mut time = 0.;
+        let mut draw = |mut events: Vec<egui::Event>| {
+            time += 0.03;
+            guard.filter(&mut events, time);
+            let _ = ctx.run(
+                egui::RawInput {
+                    events,
+                    time: Some(time),
+                    ..Default::default()
+                },
+                |ctx| {
+                    if ctx.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Escape)) {
+                        open = false;
+                    }
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        if open {
+                            let input = editable_combo(ui, "ai-instruction", &mut text, &[], 200.);
+                            if time == 0.03 {
+                                input.request_focus();
+                            }
+                            focused = input.has_focus();
+                        }
+                    });
+                },
+            );
+            (open, focused, text.clone())
+        };
+        let escape = |pressed| egui::Event::Key {
+            key: egui::Key::Escape,
+            physical_key: None,
+            pressed,
+            repeat: false,
+            modifiers: egui::Modifiers::NONE,
+        };
+        draw(vec![]);
+        assert_eq!(
+            draw(vec![
+                egui::Event::Ime(egui::ImeEvent::Enabled),
+                egui::Event::Ime(egui::ImeEvent::Preedit("にほん".into())),
+            ]),
+            (true, true, "にほん".into())
+        );
+        draw(vec![egui::Event::Ime(egui::ImeEvent::Disabled)]);
+        assert_eq!(draw(vec![escape(true)]), (true, true, String::new()));
+        assert!(!draw(vec![escape(false), escape(true)]).0);
     }
 }
 
