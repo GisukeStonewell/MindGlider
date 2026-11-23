@@ -8,11 +8,11 @@ English | [日本語](README.md)
 
 ## Download
 
-Download `MindGlider-0.11.0-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases/tag/v0.11.0), extract it to a writable directory and run `mindglider.exe`. Neither Java nor Rust is needed to run the application. Verify the ZIP against the accompanying `SHA256SUMS.txt`.
+Download `MindGlider-0.11.1-windows-x64.zip` from [GitHub Releases](https://github.com/GisukeStonewell/MindGlider/releases/tag/v0.11.1), extract it to a writable directory and run `mindglider.exe`. Neither Java nor Rust is needed to run the application. Verify the ZIP against the accompanying `SHA256SUMS.txt`.
 
 Choose one of ten palettes under **View → Theme**. Hover over a theme to preview it and click to save your choice. The corresponding source is available through the **Source code** downloads on the same release page.
 
-The supported target is **Windows 11 x64**. AI CLIs are optional for ordinary mind-map editing. [v0.11.0 release notes](docs/releases/v0.11.0.md) | [Updating an existing install](docs/usage.en.md#updating-while-mindglider-is-running)
+The supported target is **Windows 11 x64**. AI CLIs are optional for ordinary mind-map editing. [v0.11.1 release notes](docs/releases/v0.11.1.md) | [Updating an existing install](docs/usage.en.md#updating-while-mindglider-is-running)
 
 ## Features
 

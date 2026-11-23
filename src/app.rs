@@ -257,6 +257,7 @@ struct IconPicker {
 pub struct MindGlider {
     icon_picker: Option<IconPicker>,
     menu: MenuState,
+    ignore_alt_until_release: bool,
     menu_rects: Vec<Rect>,
     about_open: bool,
     icon_filter: String,
@@ -438,6 +439,7 @@ impl MindGlider {
         let mut app = Self {
             icon_picker: None,
             menu: Default::default(),
+            ignore_alt_until_release: false,
             menu_rects: vec![],
             about_open: false,
             icon_filter: String::new(),
@@ -1631,7 +1633,10 @@ impl MindGlider {
     }
 
     fn menu_keys(&mut self, ctx: &egui::Context) -> bool {
-        let alt = ctx.input(|i| i.modifiers.alt);
+        if !ctx.input(|i| i.focused) {
+            return false;
+        }
+        let alt = !self.ignore_alt_until_release && ctx.input(|i| i.modifiers.alt);
         let pressed = ctx.input(|i| {
             i.events
                 .iter()
@@ -4769,6 +4774,16 @@ impl MindGlider {
 }
 impl eframe::App for MindGlider {
     fn raw_input_hook(&mut self, ctx: &egui::Context, input: &mut egui::RawInput) {
+        if !input.focused || input.events.contains(&egui::Event::WindowFocused(false)) {
+            // A system shortcut can take focus without delivering its key to egui.
+            self.menu = MenuState::default();
+            self.ignore_alt_until_release = true;
+        }
+        if input.focused {
+            self.ignore_alt_until_release = input.modifiers.alt
+                && (self.ignore_alt_until_release
+                    || input.events.contains(&egui::Event::WindowFocused(true)));
+        }
         // egui clears text focus on Escape before update, so filter IME keys here.
         if input.focused {
             let time = input.time.unwrap_or_else(|| ctx.input(|i| i.time));
@@ -5364,6 +5379,66 @@ mod tests {
                 assert!(rect.width() >= 530. + 48., "{rect:?}");
             }
         }
+    }
+
+    #[test]
+    fn window_switch_cancels_menu_input_and_preserves_map_editing() {
+        let ctx = egui::Context::default();
+        let mut app = MindGlider::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            vec![],
+            Instant::now(),
+        );
+        app.tabs = vec![Tab::new(Document::default(), None)];
+        app.active = 0;
+        let mut frame = |focused, alt, events| {
+            let mut input = egui::RawInput {
+                focused,
+                modifiers: if alt {
+                    egui::Modifiers::ALT
+                } else {
+                    egui::Modifiers::NONE
+                },
+                events,
+                ..Default::default()
+            };
+            eframe::App::raw_input_hook(&mut app, &ctx, &mut input);
+            let _ = ctx.run(input, |ctx| app.keyboard(ctx));
+            (app.menu.active, app.menu.open)
+        };
+        let key = |key, modifiers| egui::Event::Key {
+            key,
+            physical_key: None,
+            pressed: true,
+            repeat: false,
+            modifiers,
+        };
+
+        // Windows handles Alt+Tab without delivering Tab to this window.
+        assert_eq!(frame(true, true, vec![]), (false, false));
+        let lost = egui::Event::WindowFocused(false);
+        let gained = egui::Event::WindowFocused(true);
+        assert_eq!(frame(false, false, vec![lost.clone()]), (false, false));
+        assert_eq!(frame(true, true, vec![gained.clone()]), (false, false));
+        let alt_f = key(egui::Key::F, egui::Modifiers::ALT);
+        assert_eq!(frame(true, true, vec![alt_f.clone()]), (false, false));
+        assert_eq!(frame(true, false, vec![]), (false, false));
+
+        assert_eq!(frame(true, true, vec![]), (false, false));
+        assert_eq!(frame(true, false, vec![]), (true, false));
+        assert_eq!(frame(true, true, vec![alt_f]), (true, true));
+        assert_eq!(frame(true, false, vec![]), (true, true));
+
+        // Loss and regain may arrive within one frame, even with a menu open.
+        let tab = key(egui::Key::Tab, egui::Modifiers::NONE);
+        assert_eq!(frame(true, false, vec![lost, gained, tab]), (false, false));
+        let current = &app.tabs[0].primary;
+        let doc = &app.tabs[0].history.doc;
+        assert_eq!(
+            doc.nodes[current].parent.as_deref(),
+            Some(doc.root.as_str())
+        );
+        assert_eq!(&app.inline.as_ref().unwrap().id, current);
     }
 
     #[test]

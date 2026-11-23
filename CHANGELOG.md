@@ -1,5 +1,11 @@
 # Changelog / 変更履歴
 
+## 0.11.1 — Keyboard focus / キーボードフォーカス
+
+Alt+TabでMindGliderに戻ったときにメニュー操作が残り、ツリーをすぐに編集できない問題を修正しました。[日英リリースノート](docs/releases/v0.11.1.md)
+
+Fixes a keyboard focus issue that blocked tree editing after Alt+Tab returned to MindGlider. [Bilingual release notes](docs/releases/v0.11.1.md)
+
 ## 0.11.0 — AI editing and diagnostics / AI編集・診断
 
 F12のタイトル変更モード、ツリー再構成の差分確認と一括適用、CLIの診断ログ、起動中の更新通知と再起動を追加しました。ノード追加・移動・削除のキー操作、日本語IME、設定保存時の動作を改善しました。[日英リリースノート](docs/releases/v0.11.0.md)
